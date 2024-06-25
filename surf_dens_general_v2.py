@@ -1,26 +1,35 @@
 #! /usr/bin/python
-
+#
 ##### SURFACE DENSITY MAP GENERATOR FOR MOLECULAR DYNAMICS SIMULATIONS ##### 
-##             Written by Jakub LICKO, MChem       
+#              Written by Jakub LICKO, MChem       
 #
-## INSTRUCTIONS
-## Example command line input:
-##      python surf_dens.py -t trajout.xtc -s topol.tpr -z0 0 -dz 1.5 -sel "resname UO2, resname MAL" -start 45000 -stop -1 -plot heatmap 
+#  INSTRUCTIONS
+#  Example command line input:
+#       python surf_dens.py -t trajout.xtc -s topol.tpr -z0 0 -dz 1.5 -sel "resname UO2, resname MAL" -start 45000 -stop -1 -plot heatmap 
+#  Flags:
+#       -t : centred trajectory file
+#       -s : topology file (tpr for GROMACS)
+#       -z0 : distance from clay surface to consider, default 0
+#       -dz : thickness of sampling layer (in Angstroms)
+#       -sel : selection of species, in quotation marks, comma separated selections (e.g. "resname SOL, resname Na")
+#       -start : first trajectory frame to analyse
+#       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
+#       -plot : type of plot to generate. Options: heatmap (default), scatter
 #
-## PREREQUISITES
-##  (1) Installed python libraries: 
+#  PREREQUISITES
+#   (1) Installed python libraries: 
 #       numpy
 #       pandas
 #       matplotlib.pyplot
 #       MDAnalysis
 #       argparse
-##  (2) Trajectory preprocessing: clay surface being sampled needs to remain fixed
+#   (2) Trajectory preprocessing: clay surface being sampled needs to remain fixed
 #
-##      (a) Select atom in clay surface to be sampled (e.g. atom 3521)
-##      (b) Create a Gromacs index containing chosen atom
-##      e.g.    gmx_mpi make_ndx -f confout_PROD.gro -o surf_dens.ndx
-##      (c) Center trajectory using the index, keeping the surface centred (-center) and all atoms in simulation box (-pbc atom)       
-##      e.g.    gmx_mpi trjconv -f ../traj.trr -s ../topol.tpr -o ${d}_trajout_center.xtc -n traj_center.ndx -center -pbc atom
+#       (a) Select atom in clay surface to be sampled (e.g. atom 3521)
+#       (b) Create a Gromacs index containing chosen atom
+#       e.g.    gmx_mpi make_ndx -f confout_PROD.gro -o surf_dens.ndx
+#       (c) Center trajectory using the index, keeping the surface centred (-center) and all atoms in simulation box (-pbc atom)       
+#       e.g.    gmx_mpi trjconv -f ../traj.trr -s ../topol.tpr -o ${d}_trajout_center.xtc -n traj_center.ndx -center -pbc atom
 
 import numpy as np 
 import pandas as pd
