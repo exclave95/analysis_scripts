@@ -248,7 +248,7 @@ def top_side():
 
             # SAVING     
             # define plot title
-            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_top'
             #replace whitespaces with underscores
             plot_title = plot_title.replace(' ','_')
             #save figure
@@ -278,7 +278,7 @@ def top_side():
 
             # SAVING     
             # define plot title
-            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_top'
             #replace whitespaces with underscores
             plot_title = plot_title.replace(' ','_')
             #save figure
@@ -408,7 +408,7 @@ def bottom_side():
 
             # SAVING     
             # define plot title
-            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_bottom'
             #replace whitespaces with underscores
             plot_title = plot_title.replace(' ','_')
             #save figure
@@ -438,7 +438,7 @@ def bottom_side():
 
             # SAVING     
             # define plot title
-            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_bottom'
             #replace whitespaces with underscores
             plot_title = plot_title.replace(' ','_')
             #save figure
