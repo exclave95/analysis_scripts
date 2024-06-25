@@ -16,8 +16,9 @@
 #       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
 #       -plot : type of plot to generate. Options: heatmap (default), scatter
 #       -side : which 'face' to sample. Options: top (default), bottom, both. 
-#               Note: 'top' and 'bottom' refer to the z-coordinates of exposed clay surfaces.
+#               Note 1: 'top' and 'bottom' refer to the z-coordinates of exposed clay surfaces.
 #               Top = maximum z-coords, bottom = minimum z-coords
+#               Note 2: this option only works when both top and bottom layers are fixed in place, e.g. if position restraints are applied on all clay layers
 #
 #  PREREQUISITES
 #   (1) Installed python libraries: 
