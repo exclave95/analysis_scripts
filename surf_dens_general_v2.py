@@ -15,6 +15,9 @@
 #       -start : first trajectory frame to analyse
 #       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
 #       -plot : type of plot to generate. Options: heatmap (default), scatter
+#       -side : which 'face' to sample. Options: top (default), bottom, both. 
+#               Note: 'top' and 'bottom' refer to the z-coordinates of exposed clay surfaces.
+#               Top = maximum z-coords, bottom = minimum z-coords
 #
 #  PREREQUISITES
 #   (1) Installed python libraries: 
@@ -24,7 +27,6 @@
 #       MDAnalysis
 #       argparse
 #   (2) Trajectory preprocessing: clay surface being sampled needs to remain fixed
-#
 #       (a) Select atom in clay surface to be sampled (e.g. atom 3521)
 #       (b) Create a Gromacs index containing chosen atom
 #       e.g.    gmx_mpi make_ndx -f confout_PROD.gro -o surf_dens.ndx
@@ -49,6 +51,7 @@ parser.add_argument('-sel', help='species to sample. NOTE: string needs to be in
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-plot', choices=['heatmap','scatter'], default='heatmap', help='type of plot to generate. Options: heatmap (default), scatter')
+parser.add_argument('-side', choices=['top','bottom','both'], default='top', help='which exposed clay layer to use for analysis. default: top, i.e. the face with the highest z coordinates')
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
@@ -61,6 +64,7 @@ topol = args['s']
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 plot_type = args['plot']
+side = args['side']
 
 ## frame_start = int(b0 / ts)
 ## frame_stop = int(e / ts)
@@ -114,74 +118,339 @@ print(f'inaccessible layer (2 clay layers and interlayer) is {round(clay_thickne
 # %%
 ###### TETRAHEDRAL ADSORPTION SITE SELECTION #####
 
-# select tetrahedral aluminium atoms (AT)
-# only select those exposed to bulk water - captured within 2 Angstrom of exposed clay surface
-surface_at_only = clay_max_z - 2    
-at_sel = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {surface_at_only})')
-at_sel_pos = at_sel.positions
+    
+def top_side():    
+    # select tetrahedral aluminium atoms (AT)
+    # only select those exposed to bulk water - captured within 2 Angstrom of exposed clay surface
+    surface_at_only = clay_max_z - 2    
+    at_sel = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {surface_at_only})')
+    at_sel_pos = at_sel.positions
 
-#store AT positions in np array for later
-at_pos = np.empty((0,3))
-at_pos = np.vstack((at_pos, at_sel_pos))
+    #store AT positions in np array for later
+    at_pos = np.empty((0,3))
+    at_pos = np.vstack((at_pos, at_sel_pos))
 
-#print(np.shape(at_pos))
+    #print(np.shape(at_pos))
 
-# store only x and y positions
-at_xy = at_pos[0:,0:2]
-all_at_x = np.transpose(at_xy)[0]
-all_at_y = np.transpose(at_xy)[1]
+    # store only x and y positions
+    at_xy = at_pos[0:,0:2]
+    all_at_x = np.transpose(at_xy)[0]
+    all_at_y = np.transpose(at_xy)[1]
 
-#print(np.shape(all_at_x), all_at_x)
-#print(np.shape(all_at_y), all_at_y)
+    #print(np.shape(all_at_x), all_at_x)
+    #print(np.shape(all_at_y), all_at_y)
 
-# convert array into dataframe 
-at_xy_df = pd.DataFrame(at_xy) 
-  
-# save the dataframe as a csv file 
-at_xy_df.to_csv("at_xy.csv")
+    # convert array into dataframe 
+    at_xy_df = pd.DataFrame(at_xy) 
+    
+    # save the dataframe as a csv file 
+    at_xy_df.to_csv("at_xy_top.csv")
 
 
-#print(at_pos)
+    #print(at_pos)
 
-# %%
-###### OCTAHEDRAL ADSORPTION SITE SELECTION #####
+    # %%
+    ###### OCTAHEDRAL ADSORPTION SITE SELECTION #####
 
-# select octahedral magnesium atoms (MGO)
-# only select those in the clay surface being sampled - captured within 4 Angstrom of clay surface
-surface_mgo_only = clay_max_z - 4    
-mgo_sel = u.select_atoms(f'name MGO* and (prop z <= {clay_max_z} and 'f'prop z >= {surface_mgo_only})')
-mgo_sel_pos = mgo_sel.positions
+    # select octahedral magnesium atoms (MGO)
+    # only select those in the clay surface being sampled - captured within 4 Angstrom of clay surface
+    surface_mgo_only = clay_max_z - 4    
+    mgo_sel = u.select_atoms(f'name MGO* and (prop z <= {clay_max_z} and 'f'prop z >= {surface_mgo_only})')
+    mgo_sel_pos = mgo_sel.positions
 
-#store MGO positions in np array for later
-mgo_pos = np.empty((0,3))
-mgo_pos = np.vstack((mgo_pos, mgo_sel_pos))
+    #store MGO positions in np array for later
+    mgo_pos = np.empty((0,3))
+    mgo_pos = np.vstack((mgo_pos, mgo_sel_pos))
 
-#print(mgo_pos)
+    #print(mgo_pos)
 
-#print(np.shape(mgo_pos))
-# store MGO positions in np array for later
-mgo_xy = mgo_pos[0:,0:2]
-#print(np.shape(mgo_xy))
+    #print(np.shape(mgo_pos))
+    # store MGO positions in np array for later
+    mgo_xy = mgo_pos[0:,0:2]
+    #print(np.shape(mgo_xy))
 
-# select only x and y coordinates
-all_mgo_x = np.transpose(mgo_xy)[0]
-all_mgo_y = np.transpose(mgo_xy)[1]
-#print(np.shape(all_mgo_x), all_mgo_x)
-#print(np.shape(all_mgo_y), all_mgo_y)
+    # select only x and y coordinates
+    all_mgo_x = np.transpose(mgo_xy)[0]
+    all_mgo_y = np.transpose(mgo_xy)[1]
+    #print(np.shape(all_mgo_x), all_mgo_x)
+    #print(np.shape(all_mgo_y), all_mgo_y)
 
-# convert array into dataframe 
-mgo_xy_df = pd.DataFrame(mgo_xy) 
-  
-# save the dataframe as a csv file 
-mgo_xy_df.to_csv("mgo_xy.csv")
+    # convert array into dataframe 
+    mgo_xy_df = pd.DataFrame(mgo_xy) 
+    
+    # save the dataframe as a csv file 
+    mgo_xy_df.to_csv("mgo_xy_top.csv")
 
-# %%
+    # %%
 
-##### DYNAMIC RECORDING OF SELECTED SOLUTE/ADSORBATE X AND Y POSITIONS ##### 
+    ##### DYNAMIC RECORDING OF SELECTED SOLUTE/ADSORBATE X AND Y POSITIONS ##### 
 
-# define sampling layer
-start_z = clay_max_z + z0
-end_z = start_z + dz
+    # define sampling layer
+    start_z = clay_max_z + z0
+    end_z = start_z + dz
+
+    for i in sel:
+    # create updating/dynamic atom selection
+    dynamic_sel = u.select_atoms(f'{i} and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
+    
+    # create empty array to fill with coordinates
+    pos = np.empty((0,3))
+   
+    # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
+    
+    # iterate through trajectory between selected frames
+    for ts in u.trajectory[frame_start:frame_stop]:
+        dynamic_sel # run the dynamic selection defined earlier
+        pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
+        
+        #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
+        
+        # for each atom (row) in pos_dyn, vertically stack atom positions
+        for j in pos_dyn: 
+            pos = np.vstack((pos, pos_dyn))
+        
+        # rinse and repeat
+        u.trajectory.next
+
+    ### FILTER THROUGH RECORDED COORDINATES ###
+    # select just the x and y coordinates
+    pos_xy = pos[0:,0:2]
+
+    # divide x and y into separate arrays
+    pos_all_x = np.transpose(pos_xy)[0]
+    pos_all_y = np.transpose(pos_xy)[1]
+
+    #### PLOTTING ####
+
+    if plot_type == 'heatmap':
+        fig, ax = plt.subplots(1,1)
+    
+        # create scatter plots of sel, AT and MGO
+        norm = mpl.colors.Normalize(vmin=0, vmax=10)
+        plt.hist2d(pos_all_x, pos_all_y, bins=300, norm=norm, cmap='viridis', range=[[minX, maxX],[minY, maxY]])
+        plt.colorbar()
+        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='red', linewidths=7)
+        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='cyan', linewidths=8)
+        
+        # axis legend
+        ax.legend(loc='upper left')
+        
+        # axis labels
+        ax.set_xlabel('x (Å)')
+        ax.set_ylabel('y (Å)')
+        
+        # axis titles
+        ax.set_title(f'{i} {z0}-{dz} Å')
+        
+        # set axis limits
+        ax.set_xlim(minX, maxX)
+        ax.set_ylim(minY, maxY)
+
+        # SAVING     
+        # define plot title
+        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+        #replace whitespaces with underscores
+        plot_title = plot_title.replace(' ','_')
+        #save figure
+        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+
+    else:
+        fig, ax = plt.subplots(1,1)
+        
+        # create scatter plots of sel, AT and MGO
+        plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker="x", linewidths=1, color = 'red')
+        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
+        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)    
+        
+        # axis legend
+        ax.legend(loc='upper left')
+        
+        # axis labels
+        ax.set_xlabel('x (Å)')
+        ax.set_ylabel('y (Å)')
+        
+        # axis titles
+        ax.set_title(f'{i} {z0}-{dz} Å')
+        
+        # set axis limits
+        ax.set_xlim(minX, maxX)
+        ax.set_ylim(minY, maxY)
+
+        # SAVING     
+        # define plot title
+        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+        #replace whitespaces with underscores
+        plot_title = plot_title.replace(' ','_')
+        #save figure
+        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+
+
+def bottom_side():
+    # select tetrahedral aluminium atoms (AT)
+    # only select those exposed to bulk water - captured within 2 Angstrom of exposed clay surface
+    surface_at_only = clay_min_z + 2    
+    at_sel = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {surface_at_only})')
+    at_sel_pos = at_sel.positions
+
+    #store AT positions in np array for later
+    at_pos = np.empty((0,3))
+    at_pos = np.vstack((at_pos, at_sel_pos))
+
+    #print(np.shape(at_pos))
+
+    # store only x and y positions
+    at_xy = at_pos[0:,0:2]
+    all_at_x = np.transpose(at_xy)[0]
+    all_at_y = np.transpose(at_xy)[1]
+
+    #print(np.shape(all_at_x), all_at_x)
+    #print(np.shape(all_at_y), all_at_y)
+
+    # convert array into dataframe 
+    at_xy_df = pd.DataFrame(at_xy) 
+    
+    # save the dataframe as a csv file 
+    at_xy_df.to_csv("at_xy_bottom.csv")
+    ###### OCTAHEDRAL ADSORPTION SITE SELECTION #####
+
+    # select octahedral magnesium atoms (MGO)
+    # only select those in the clay surface being sampled - captured within 4 Angstrom of clay surface
+    surface_mgo_only = clay_min_z + 4    
+    mgo_sel = u.select_atoms(f'name MGO* and (prop z >= {clay_min_z} and 'f'prop z <= {surface_mgo_only})')
+    mgo_sel_pos = mgo_sel.positions
+
+    #store MGO positions in np array for later
+    mgo_pos = np.empty((0,3))
+    mgo_pos = np.vstack((mgo_pos, mgo_sel_pos))
+
+
+    #print(np.shape(mgo_pos))
+    # store MGO positions in np array for later
+    mgo_xy = mgo_pos[0:,0:2]
+    #print(np.shape(mgo_xy))
+
+    # select only x and y coordinates
+    all_mgo_x = np.transpose(mgo_xy)[0]
+    all_mgo_y = np.transpose(mgo_xy)[1]
+    #print(np.shape(all_mgo_x), all_mgo_x)
+    #print(np.shape(all_mgo_y), all_mgo_y)
+
+    # convert array into dataframe 
+    mgo_xy_df = pd.DataFrame(mgo_xy) 
+    
+    # save the dataframe as a csv file 
+    mgo_xy_df.to_csv("mgo_xy_bottom.csv")
+
+    # %%
+
+    ##### DYNAMIC RECORDING OF SELECTED SOLUTE/ADSORBATE X AND Y POSITIONS ##### 
+
+    # define sampling layer
+    start_z = clay_min_z - z0
+    end_z = start_z - dz
+
+    for i in sel:
+    # create updating/dynamic atom selection
+    dynamic_sel = u.select_atoms(f'{i} and (prop z <= {start_z} and 'f'prop z >= {end_z})', updating = True)
+    
+    # create empty array to fill with coordinates
+    pos = np.empty((0,3))
+   
+    # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
+    
+    # iterate through trajectory between selected frames
+    for ts in u.trajectory[frame_start:frame_stop]:
+        dynamic_sel # run the dynamic selection defined earlier
+        pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
+        
+        #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
+        
+        # for each atom (row) in pos_dyn, vertically stack atom positions
+        for j in pos_dyn: 
+            pos = np.vstack((pos, pos_dyn))
+        
+        # rinse and repeat
+        u.trajectory.next
+
+    ### FILTER THROUGH RECORDED COORDINATES ###
+    # select just the x and y coordinates
+    pos_xy = pos[0:,0:2]
+
+    # divide x and y into separate arrays
+    pos_all_x = np.transpose(pos_xy)[0]
+    pos_all_y = np.transpose(pos_xy)[1]
+
+    #### PLOTTING ####
+
+    if plot_type == 'heatmap':
+        fig, ax = plt.subplots(1,1)
+    
+        # create scatter plots of sel, AT and MGO
+        norm = mpl.colors.Normalize(vmin=0, vmax=10)
+        plt.hist2d(pos_all_x, pos_all_y, bins=300, norm=norm, cmap='viridis', range=[[minX, maxX],[minY, maxY]])
+        plt.colorbar()
+        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='red', linewidths=7)
+        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='cyan', linewidths=8)
+        
+        # axis legend
+        ax.legend(loc='upper left')
+        
+        # axis labels
+        ax.set_xlabel('x (Å)')
+        ax.set_ylabel('y (Å)')
+        
+        # axis titles
+        ax.set_title(f'{i} {z0}-{dz} Å')
+        
+        # set axis limits
+        ax.set_xlim(minX, maxX)
+        ax.set_ylim(minY, maxY)
+
+        # SAVING     
+        # define plot title
+        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+        #replace whitespaces with underscores
+        plot_title = plot_title.replace(' ','_')
+        #save figure
+        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+
+    else:
+        fig, ax = plt.subplots(1,1)
+        
+        # create scatter plots of sel, AT and MGO
+        plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker="x", linewidths=1, color = 'red')
+        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
+        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)    
+        
+        # axis legend
+        ax.legend(loc='upper left')
+        
+        # axis labels
+        ax.set_xlabel('x (Å)')
+        ax.set_ylabel('y (Å)')
+        
+        # axis titles
+        ax.set_title(f'{i} {z0}-{dz} Å')
+        
+        # set axis limits
+        ax.set_xlim(minX, maxX)
+        ax.set_ylim(minY, maxY)
+
+        # SAVING     
+        # define plot title
+        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+        #replace whitespaces with underscores
+        plot_title = plot_title.replace(' ','_')
+        #save figure
+        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+
+if side == 'top':
+    top_side()
+elif side == 'bottom':
+    bottom_side()
+elif side == 'both':
+    top_side()
+    bottom_side()
 
 # iterate through selections
 for i in sel:
