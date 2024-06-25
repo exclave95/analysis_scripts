@@ -191,98 +191,98 @@ def top_side():
 
     for i in sel:
     # create updating/dynamic atom selection
-    dynamic_sel = u.select_atoms(f'{i} and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
+        dynamic_sel = u.select_atoms(f'{i} and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
+        
+        # create empty array to fill with coordinates
+        pos = np.empty((0,3))
     
-    # create empty array to fill with coordinates
-    pos = np.empty((0,3))
-   
-    # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-    
-    # iterate through trajectory between selected frames
-    for ts in u.trajectory[frame_start:frame_stop]:
-        dynamic_sel # run the dynamic selection defined earlier
-        pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
+        # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
         
-        #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-        
-        # for each atom (row) in pos_dyn, vertically stack atom positions
-        for j in pos_dyn: 
-            pos = np.vstack((pos, pos_dyn))
-        
-        # rinse and repeat
-        u.trajectory.next
+        # iterate through trajectory between selected frames
+        for ts in u.trajectory[frame_start:frame_stop]:
+            dynamic_sel # run the dynamic selection defined earlier
+            pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
+            
+            #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
+            
+            # for each atom (row) in pos_dyn, vertically stack atom positions
+            for j in pos_dyn: 
+                pos = np.vstack((pos, pos_dyn))
+            
+            # rinse and repeat
+            u.trajectory.next
 
-    ### FILTER THROUGH RECORDED COORDINATES ###
-    # select just the x and y coordinates
-    pos_xy = pos[0:,0:2]
+        ### FILTER THROUGH RECORDED COORDINATES ###
+        # select just the x and y coordinates
+        pos_xy = pos[0:,0:2]
 
-    # divide x and y into separate arrays
-    pos_all_x = np.transpose(pos_xy)[0]
-    pos_all_y = np.transpose(pos_xy)[1]
+        # divide x and y into separate arrays
+        pos_all_x = np.transpose(pos_xy)[0]
+        pos_all_y = np.transpose(pos_xy)[1]
 
-    #### PLOTTING ####
+        #### PLOTTING ####
 
-    if plot_type == 'heatmap':
-        fig, ax = plt.subplots(1,1)
-    
-        # create scatter plots of sel, AT and MGO
-        norm = mpl.colors.Normalize(vmin=0, vmax=10)
-        plt.hist2d(pos_all_x, pos_all_y, bins=300, norm=norm, cmap='viridis', range=[[minX, maxX],[minY, maxY]])
-        plt.colorbar()
-        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='red', linewidths=7)
-        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='cyan', linewidths=8)
+        if plot_type == 'heatmap':
+            fig, ax = plt.subplots(1,1)
         
-        # axis legend
-        ax.legend(loc='upper left')
-        
-        # axis labels
-        ax.set_xlabel('x (Å)')
-        ax.set_ylabel('y (Å)')
-        
-        # axis titles
-        ax.set_title(f'{i} {z0}-{dz} Å')
-        
-        # set axis limits
-        ax.set_xlim(minX, maxX)
-        ax.set_ylim(minY, maxY)
+            # create scatter plots of sel, AT and MGO
+            norm = mpl.colors.Normalize(vmin=0, vmax=10)
+            plt.hist2d(pos_all_x, pos_all_y, bins=300, norm=norm, cmap='viridis', range=[[minX, maxX],[minY, maxY]])
+            plt.colorbar()
+            plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='red', linewidths=7)
+            plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='cyan', linewidths=8)
+            
+            # axis legend
+            ax.legend(loc='upper left')
+            
+            # axis labels
+            ax.set_xlabel('x (Å)')
+            ax.set_ylabel('y (Å)')
+            
+            # axis titles
+            ax.set_title(f'{i} {z0}-{dz} Å')
+            
+            # set axis limits
+            ax.set_xlim(minX, maxX)
+            ax.set_ylim(minY, maxY)
 
-        # SAVING     
-        # define plot title
-        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
-        #replace whitespaces with underscores
-        plot_title = plot_title.replace(' ','_')
-        #save figure
-        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+            # SAVING     
+            # define plot title
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            #replace whitespaces with underscores
+            plot_title = plot_title.replace(' ','_')
+            #save figure
+            plt.savefig(f'{plot_title}.png', bbox_inches='tight')
 
-    else:
-        fig, ax = plt.subplots(1,1)
-        
-        # create scatter plots of sel, AT and MGO
-        plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker="x", linewidths=1, color = 'red')
-        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
-        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)    
-        
-        # axis legend
-        ax.legend(loc='upper left')
-        
-        # axis labels
-        ax.set_xlabel('x (Å)')
-        ax.set_ylabel('y (Å)')
-        
-        # axis titles
-        ax.set_title(f'{i} {z0}-{dz} Å')
-        
-        # set axis limits
-        ax.set_xlim(minX, maxX)
-        ax.set_ylim(minY, maxY)
+        else:
+            fig, ax = plt.subplots(1,1)
+            
+            # create scatter plots of sel, AT and MGO
+            plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker="x", linewidths=1, color = 'red')
+            plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
+            plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)    
+            
+            # axis legend
+            ax.legend(loc='upper left')
+            
+            # axis labels
+            ax.set_xlabel('x (Å)')
+            ax.set_ylabel('y (Å)')
+            
+            # axis titles
+            ax.set_title(f'{i} {z0}-{dz} Å')
+            
+            # set axis limits
+            ax.set_xlim(minX, maxX)
+            ax.set_ylim(minY, maxY)
 
-        # SAVING     
-        # define plot title
-        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
-        #replace whitespaces with underscores
-        plot_title = plot_title.replace(' ','_')
-        #save figure
-        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+            # SAVING     
+            # define plot title
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            #replace whitespaces with underscores
+            plot_title = plot_title.replace(' ','_')
+            #save figure
+            plt.savefig(f'{plot_title}.png', bbox_inches='tight')
 
 
 def bottom_side():
@@ -350,99 +350,99 @@ def bottom_side():
     end_z = start_z - dz
 
     for i in sel:
-    # create updating/dynamic atom selection
-    dynamic_sel = u.select_atoms(f'{i} and (prop z <= {start_z} and 'f'prop z >= {end_z})', updating = True)
+        # create updating/dynamic atom selection
+        dynamic_sel = u.select_atoms(f'{i} and (prop z <= {start_z} and 'f'prop z >= {end_z})', updating = True)
+        
+        # create empty array to fill with coordinates
+        pos = np.empty((0,3))
     
-    # create empty array to fill with coordinates
-    pos = np.empty((0,3))
-   
-    # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-    
-    # iterate through trajectory between selected frames
-    for ts in u.trajectory[frame_start:frame_stop]:
-        dynamic_sel # run the dynamic selection defined earlier
-        pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
+        # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
         
-        #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-        
-        # for each atom (row) in pos_dyn, vertically stack atom positions
-        for j in pos_dyn: 
-            pos = np.vstack((pos, pos_dyn))
-        
-        # rinse and repeat
-        u.trajectory.next
+        # iterate through trajectory between selected frames
+        for ts in u.trajectory[frame_start:frame_stop]:
+            dynamic_sel # run the dynamic selection defined earlier
+            pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
+            
+            #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
+            
+            # for each atom (row) in pos_dyn, vertically stack atom positions
+            for j in pos_dyn: 
+                pos = np.vstack((pos, pos_dyn))
+            
+            # rinse and repeat
+            u.trajectory.next
 
-    ### FILTER THROUGH RECORDED COORDINATES ###
-    # select just the x and y coordinates
-    pos_xy = pos[0:,0:2]
+        ### FILTER THROUGH RECORDED COORDINATES ###
+        # select just the x and y coordinates
+        pos_xy = pos[0:,0:2]
 
-    # divide x and y into separate arrays
-    pos_all_x = np.transpose(pos_xy)[0]
-    pos_all_y = np.transpose(pos_xy)[1]
+        # divide x and y into separate arrays
+        pos_all_x = np.transpose(pos_xy)[0]
+        pos_all_y = np.transpose(pos_xy)[1]
 
-    #### PLOTTING ####
+        #### PLOTTING ####
 
-    if plot_type == 'heatmap':
-        fig, ax = plt.subplots(1,1)
-    
-        # create scatter plots of sel, AT and MGO
-        norm = mpl.colors.Normalize(vmin=0, vmax=10)
-        plt.hist2d(pos_all_x, pos_all_y, bins=300, norm=norm, cmap='viridis', range=[[minX, maxX],[minY, maxY]])
-        plt.colorbar()
-        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='red', linewidths=7)
-        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='cyan', linewidths=8)
+        if plot_type == 'heatmap':
+            fig, ax = plt.subplots(1,1)
         
-        # axis legend
-        ax.legend(loc='upper left')
-        
-        # axis labels
-        ax.set_xlabel('x (Å)')
-        ax.set_ylabel('y (Å)')
-        
-        # axis titles
-        ax.set_title(f'{i} {z0}-{dz} Å')
-        
-        # set axis limits
-        ax.set_xlim(minX, maxX)
-        ax.set_ylim(minY, maxY)
+            # create scatter plots of sel, AT and MGO
+            norm = mpl.colors.Normalize(vmin=0, vmax=10)
+            plt.hist2d(pos_all_x, pos_all_y, bins=300, norm=norm, cmap='viridis', range=[[minX, maxX],[minY, maxY]])
+            plt.colorbar()
+            plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='red', linewidths=7)
+            plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='cyan', linewidths=8)
+            
+            # axis legend
+            ax.legend(loc='upper left')
+            
+            # axis labels
+            ax.set_xlabel('x (Å)')
+            ax.set_ylabel('y (Å)')
+            
+            # axis titles
+            ax.set_title(f'{i} {z0}-{dz} Å')
+            
+            # set axis limits
+            ax.set_xlim(minX, maxX)
+            ax.set_ylim(minY, maxY)
 
-        # SAVING     
-        # define plot title
-        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
-        #replace whitespaces with underscores
-        plot_title = plot_title.replace(' ','_')
-        #save figure
-        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+            # SAVING     
+            # define plot title
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            #replace whitespaces with underscores
+            plot_title = plot_title.replace(' ','_')
+            #save figure
+            plt.savefig(f'{plot_title}.png', bbox_inches='tight')
 
-    else:
-        fig, ax = plt.subplots(1,1)
-        
-        # create scatter plots of sel, AT and MGO
-        plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker="x", linewidths=1, color = 'red')
-        plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
-        plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)    
-        
-        # axis legend
-        ax.legend(loc='upper left')
-        
-        # axis labels
-        ax.set_xlabel('x (Å)')
-        ax.set_ylabel('y (Å)')
-        
-        # axis titles
-        ax.set_title(f'{i} {z0}-{dz} Å')
-        
-        # set axis limits
-        ax.set_xlim(minX, maxX)
-        ax.set_ylim(minY, maxY)
+        else:
+            fig, ax = plt.subplots(1,1)
+            
+            # create scatter plots of sel, AT and MGO
+            plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker="x", linewidths=1, color = 'red')
+            plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
+            plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)    
+            
+            # axis legend
+            ax.legend(loc='upper left')
+            
+            # axis labels
+            ax.set_xlabel('x (Å)')
+            ax.set_ylabel('y (Å)')
+            
+            # axis titles
+            ax.set_title(f'{i} {z0}-{dz} Å')
+            
+            # set axis limits
+            ax.set_xlim(minX, maxX)
+            ax.set_ylim(minY, maxY)
 
-        # SAVING     
-        # define plot title
-        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
-        #replace whitespaces with underscores
-        plot_title = plot_title.replace(' ','_')
-        #save figure
-        plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+            # SAVING     
+            # define plot title
+            plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+            #replace whitespaces with underscores
+            plot_title = plot_title.replace(' ','_')
+            #save figure
+            plt.savefig(f'{plot_title}.png', bbox_inches='tight')
 
 if side == 'top':
     top_side()
