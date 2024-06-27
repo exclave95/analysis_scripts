@@ -42,7 +42,7 @@ import MDAnalysis as mda
 import argparse
 
 # parse user input arguments
-parser = argparse.ArgumentParser(description="Select z axis start and end points")
+parser = argparse.ArgumentParser(description="Specify analysis options")
 parser.add_argument('-t', help='trajectory file')
 parser.add_argument('-s', default='topol.tpr', help='topology file')
 parser.add_argument('-z0', default='0', help='distance (Angstrom) from clay surface. default = 0, i.e. clay surface')
