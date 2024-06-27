@@ -27,6 +27,8 @@
 #       matplotlib.pyplot
 #       MDAnalysis
 #       argparse
+#       sys
+#       logging
 #   (2) Trajectory preprocessing: clay surface being sampled needs to remain fixed
 #       (a) Select atom in clay surface to be sampled (e.g. atom 3521)
 #       (b) Create a Gromacs index containing chosen atom
@@ -40,6 +42,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 import argparse
+import sys
+import logging
 
 # parse user input arguments
 parser = argparse.ArgumentParser(description="Specify analysis options")
@@ -72,6 +76,18 @@ side = args['side']
 ##color palette
 ##cp = ['#00bfc7', '#514bd3', '#e8871a', '#cc2481']
 
+# logging 
+logname = "dynden.log"
+logger = logging.getLogger("dynden")
+fh = logging.FileHandler(logname)
+ch = logging.StreamHandler()
+logger.addHandler(fh)
+logger.addHandler(ch)
+logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+logger.info(" ".join(sys.argv))
+logger.info("")
+        
 
 # define universe
 u = mda.Universe(topol, traj)
