@@ -57,6 +57,7 @@ parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-plot', choices=['heatmap','scatter'], default='heatmap', help='type of plot to generate. Options: heatmap (default), scatter')
 parser.add_argument('-side', choices=['top','bottom','both'], default='top', help='which exposed clay layer to use for analysis. default: top, i.e. the face with the highest z coordinates')
+parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
@@ -70,6 +71,7 @@ frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 plot_type = args['plot']
 side = args['side']
+csv = args['csv']
 
 ## frame_start = int(b0 / ts)
 ## frame_stop = int(e / ts)
@@ -77,8 +79,8 @@ side = args['side']
 ##cp = ['#00bfc7', '#514bd3', '#e8871a', '#cc2481']
 
 # logging 
-logname = "dynden.log"
-logger = logging.getLogger("dynden")
+logname = "surfdensmap.log"
+logger = logging.getLogger("surfdensmap")
 fh = logging.FileHandler(logname)
 ch = logging.StreamHandler()
 logger.addHandler(fh)
@@ -157,11 +159,14 @@ def top_side():
     #print(np.shape(all_at_x), all_at_x)
     #print(np.shape(all_at_y), all_at_y)
 
-    # convert array into dataframe 
-    at_xy_df = pd.DataFrame(at_xy) 
-    
-    # save the dataframe as a csv file 
-    at_xy_df.to_csv("at_xy_top.csv")
+    if csv == 'yes':
+        # convert array into dataframe 
+        at_xy_df = pd.DataFrame(at_xy) 
+        
+        # save the dataframe as a csv file 
+        at_xy_df.to_csv("at_xy_top.csv")
+    else:
+        print('Positions not being saved')        
 
 
     #print(at_pos)
@@ -192,11 +197,14 @@ def top_side():
     #print(np.shape(all_mgo_x), all_mgo_x)
     #print(np.shape(all_mgo_y), all_mgo_y)
 
-    # convert array into dataframe 
-    mgo_xy_df = pd.DataFrame(mgo_xy) 
-    
-    # save the dataframe as a csv file 
-    mgo_xy_df.to_csv("mgo_xy_top.csv")
+    if csv == 'yes':
+        # convert array into dataframe 
+        mgo_xy_df = pd.DataFrame(mgo_xy) 
+        
+        # save the dataframe as a csv file 
+        mgo_xy_df.to_csv("mgo_xy_top.csv")
+    else:
+        print('Positions not being saved')        
 
     # %%
 
@@ -236,6 +244,16 @@ def top_side():
         # divide x and y into separate arrays
         pos_all_x = np.transpose(pos_xy)[0]
         pos_all_y = np.transpose(pos_xy)[1]
+
+        if csv == 'yes':
+            print(f'Saving {i} xy coordinates into csv file')
+            # convert array into dataframe 
+            pos_xy_df = pd.DataFrame(pos_xy) 
+            
+            # save the dataframe as a csv file 
+            pos_xy_df.to_csv(f"{i}_xy_top.csv")
+        else:
+            print('Positions not being saved')        
 
         #### PLOTTING ####
 
@@ -323,11 +341,15 @@ def bottom_side():
     #print(np.shape(all_at_x), all_at_x)
     #print(np.shape(all_at_y), all_at_y)
 
-    # convert array into dataframe 
-    at_xy_df = pd.DataFrame(at_xy) 
-    
-    # save the dataframe as a csv file 
-    at_xy_df.to_csv("at_xy_bottom.csv")
+    if csv == 'yes':
+        # convert array into dataframe 
+        at_xy_df = pd.DataFrame(at_xy) 
+        
+        # save the dataframe as a csv file 
+        at_xy_df.to_csv("at_xy_bottom.csv")
+    else:
+        print('Positions not being saved')        
+
     ###### OCTAHEDRAL ADSORPTION SITE SELECTION #####
 
     # select octahedral magnesium atoms (MGO)
@@ -352,11 +374,14 @@ def bottom_side():
     #print(np.shape(all_mgo_x), all_mgo_x)
     #print(np.shape(all_mgo_y), all_mgo_y)
 
-    # convert array into dataframe 
-    mgo_xy_df = pd.DataFrame(mgo_xy) 
-    
-    # save the dataframe as a csv file 
-    mgo_xy_df.to_csv("mgo_xy_bottom.csv")
+    if csv == 'yes':
+        # convert array into dataframe 
+        mgo_xy_df = pd.DataFrame(mgo_xy) 
+        
+        # save the dataframe as a csv file 
+        mgo_xy_df.to_csv("mgo_xy_bottom.csv")
+    else:
+        print('Positions not being saved')        
 
     # %%
 
@@ -396,6 +421,15 @@ def bottom_side():
         # divide x and y into separate arrays
         pos_all_x = np.transpose(pos_xy)[0]
         pos_all_y = np.transpose(pos_xy)[1]
+
+        if csv == 'yes':
+            # convert array into dataframe 
+            pos_xy_df = pd.DataFrame(pos_xy) 
+            
+            # save the dataframe as a csv file 
+            pos_xy_df.to_csv(f"{i}_xy_bottom.csv")
+        else:
+            print('Positions not being saved')        
 
         #### PLOTTING ####
 
