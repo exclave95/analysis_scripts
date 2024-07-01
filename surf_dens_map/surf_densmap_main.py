@@ -18,7 +18,7 @@
 #       -side : which 'face' to sample. Options: top (default), bottom, both. 
 #               Note 1: 'top' and 'bottom' refer to the z-coordinates of exposed clay surfaces.
 #               Top = maximum z-coords, bottom = minimum z-coords
-#               Note 2: this option only works when both top and bottom layers are fixed in place, e.g. if position restraints are applied on all clay layers
+#               Note 2: 'both' option only works when both top and bottom layers are fixed in place, e.g. if position restraints are applied on all clay layers
 #
 #  PREREQUISITES
 #   (1) Installed python libraries: 
