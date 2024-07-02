@@ -112,21 +112,21 @@ for i in sel:
     
     # define radius depending on the ref/sel pair
     #### for future version of this code - consider creating a separate file where these distances are defined and just "importing it" here as the code runs ####
-    if ref == 'type Uo1':
+    if ref == 'type Uo1' or ref == 'name Uo1':
         if i == 'name OW*':
             radius = 2.46
         elif i == 'type OG2D2':
             radius = 2.34
-        elif i == 'type Oc*':
+        elif i == 'name Oc*':
             radius = 2.38
         elif i == 'name OB*':
             radius = 2.46
-    elif ref == 'type No1':
+    elif ref == 'type No1' or ref == 'name No1':
         if i == 'name OW*':
             radius = 2.54
         elif i == 'type OG2D2':
             radius = 2.42
-        elif i == 'type Oc*':
+        elif i == 'name Oc*':
             radius = 2.46
         elif i == 'name OB*':
             radius = 2.46
