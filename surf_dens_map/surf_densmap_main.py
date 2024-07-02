@@ -73,10 +73,6 @@ plot_type = args['plot']
 side = args['side']
 csv = args['csv']
 
-## frame_start = int(b0 / ts)
-## frame_stop = int(e / ts)
-##color palette
-##cp = ['#00bfc7', '#514bd3', '#e8871a', '#cc2481']
 
 # logging 
 logname = "surfdensmap.log"
@@ -118,23 +114,6 @@ clay_thickness = clay_max_z - clay_min_z
 print(f'inaccessible layer (2 clay layers and interlayer) is {round(clay_thickness)} Angstroms')
 
 # %%
-# #select actinyl atoms
-# ano2 = u.select_atoms('resname UO2 NPV')
-# ano2_positions = np.transpose(ano2.positions)
-
-# ano2_min_z = np.min(ano2_positions[2])
-# ano2_max_z = np.max(ano2_positions[2])
-
-# print(ano2_min_z, ano2_max_z)  
-
-# %%
-#distance from surface
-#dist_from_surf = 2.64
-
-# define the first adsorption shell - within ? Angstrom of clay surface
-#first_ads_shell = clay_max_z + dist_from_surf  
-
-# %%
 ###### TETRAHEDRAL ADSORPTION SITE SELECTION #####
 
     
@@ -149,15 +128,11 @@ def top_side():
     at_pos = np.empty((0,3))
     at_pos = np.vstack((at_pos, at_sel_pos))
 
-    #print(np.shape(at_pos))
-
     # store only x and y positions
     at_xy = at_pos[0:,0:2]
     all_at_x = np.transpose(at_xy)[0]
     all_at_y = np.transpose(at_xy)[1]
 
-    #print(np.shape(all_at_x), all_at_x)
-    #print(np.shape(all_at_y), all_at_y)
 
     if csv == 'yes':
         # convert array into dataframe 
@@ -184,9 +159,6 @@ def top_side():
     mgo_pos = np.empty((0,3))
     mgo_pos = np.vstack((mgo_pos, mgo_sel_pos))
 
-    #print(mgo_pos)
-
-    #print(np.shape(mgo_pos))
     # store MGO positions in np array for later
     mgo_xy = mgo_pos[0:,0:2]
     #print(np.shape(mgo_xy))
@@ -194,8 +166,6 @@ def top_side():
     # select only x and y coordinates
     all_mgo_x = np.transpose(mgo_xy)[0]
     all_mgo_y = np.transpose(mgo_xy)[1]
-    #print(np.shape(all_mgo_x), all_mgo_x)
-    #print(np.shape(all_mgo_y), all_mgo_y)
 
     if csv == 'yes':
         # convert array into dataframe 
@@ -331,15 +301,12 @@ def bottom_side():
     at_pos = np.empty((0,3))
     at_pos = np.vstack((at_pos, at_sel_pos))
 
-    #print(np.shape(at_pos))
 
     # store only x and y positions
     at_xy = at_pos[0:,0:2]
     all_at_x = np.transpose(at_xy)[0]
     all_at_y = np.transpose(at_xy)[1]
 
-    #print(np.shape(all_at_x), all_at_x)
-    #print(np.shape(all_at_y), all_at_y)
 
     if csv == 'yes':
         # convert array into dataframe 
@@ -404,9 +371,7 @@ def bottom_side():
         for ts in u.trajectory[frame_start:frame_stop]:
             dynamic_sel # run the dynamic selection defined earlier
             pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
-            
-            #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-            
+                        
             # for each atom (row) in pos_dyn, vertically stack atom positions
             for j in pos_dyn: 
                 pos = np.vstack((pos, pos_dyn))
@@ -502,220 +467,3 @@ elif side == 'bottom':
 elif side == 'both':
     top_side()
     bottom_side()
-# %%
-# #ano2
-# ano2_dynamic_sel = u.select_atoms(f'resname UO2 and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
-
-# u_pos = np.empty((0,3))
-# # print(np.shape(list)) - not needed, was only necessary during coding to ensure data shape was correct
-# for ts in u.trajectory[:-5000]:
-#     ano2_dynamic_sel # select U atoms that are in the first ads shell
-#     u_pos_dyn = ano2_dynamic_sel.positions # define positions of selected atoms
-#     #print(np.shape(pos)) - not needed, was only necessary during coding to ensure data shape was correct
-#     for i in u_pos_dyn:
-#         u_pos = np.vstack((u_pos, u_pos_dyn)) # vertically stack the positions of all U atoms iteratively
-#     #print(np.shape(ano2_dynamic_sel.positions))
-#     #print(list)
-#     u.trajectory.next
-    
-# # print(list) - not needed, was only necessary during coding to ensure data shape was correct
-
-# %%
-# #org
-# org_dynamic_sel = u.select_atoms(f'name OG2D2 and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
-
-# org_pos = np.empty((0,3))
-# # print(np.shape(list)) - not needed, was only necessary during coding to ensure data shape was correct
-# for ts in u.trajectory[:-5000]:
-#     org_dynamic_sel # select U atoms that are in the first ads shell
-#     org_pos_dyn = org_dynamic_sel.positions # define positions of selected atoms
-#     #print(np.shape(pos)) - not needed, was only necessary during coding to ensure data shape was correct
-#     for i in org_pos_dyn:
-#         org_pos = np.vstack((org_pos, org_pos_dyn)) # vertically stack the positions of all U atoms iteratively
-#     #print(np.shape(ano2_dynamic_sel.positions))
-#     #print(list)
-#     u.trajectory.next
-    
-# # print(list) - not needed, was only necessary during coding to ensure data shape was correct
-
-# %%
-# #co3
-# co3_dynamic_sel = u.select_atoms(f'name Oc and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
-
-# co3_pos = np.empty((0,3))
-# # print(np.shape(list)) - not needed, was only necessary during coding to ensure data shape was correct
-# for ts in u.trajectory[:-5000]:
-#     co3_dynamic_sel # select U atoms that are in the first ads shell
-#     co3_pos_dyn = co3_dynamic_sel.positions # define positions of selected atoms
-#     #print(np.shape(pos)) - not needed, was only necessary during coding to ensure data shape was correct
-#     for i in co3_pos_dyn:
-#         co3_pos = np.vstack((co3_pos, co3_pos_dyn)) # vertically stack the positions of all U atoms iteratively
-#     #print(np.shape(ano2_dynamic_sel.positions))
-#     #print(list)
-#     u.trajectory.next
-    
-# # print(list) - not needed, was only necessary during coding to ensure data shape was correct
-
-# %%
-# #select just the x and y positions
-# u_pos_xy = u_pos[0:,0:2]
-
-# #create separate arrays for x and y
-# #x
-# u_pos_all_x = np.transpose(u_pos_xy)[0]
-# #y
-# u_pos_all_y = np.transpose(u_pos_xy)[1]
-
-
-# %%
-# fig, ax = plt.subplots(1,1)
-
-# plt.scatter(u_pos_all_x, u_pos_all_y, alpha=1, label='UO2', marker="x", linewidths=1, color = 'red')
-# plt.scatter(org_pos_all_x, org_pos_all_y, alpha=1, label='O_MAL', marker="+", linewidths=1, color = 'black')
-# plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
-# plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)
-# ax.legend(loc='upper left')
-# ax.set_xlabel('x (Å)')
-# ax.set_ylabel('y (Å)')
-# ax.set_title(f'Surface density within {dist_from_surf} Å of surface')
-# ax.set_xlim(minX, maxX)
-# ax.set_ylim(minY, maxY)
-
-
-# plt.show()
-
-
-# # %%
-# fig, ax = plt.subplots(1,1)
-
-# plt.scatter(u_pos_all_x, u_pos_all_y, alpha=0.25, label='UO2', marker="x", linewidths=1, color = 'red')
-# plt.scatter(org_pos_all_x, org_pos_all_y, alpha=1, label='O_MAL', marker="+", linewidths=1, color = 'black')
-# plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='blue', linewidths=1)
-# plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='black', linewidths=1)
-# ax.legend(loc='upper left')
-# ax.set_xlabel('x (Å)')
-# ax.set_ylabel('y (Å)')
-# ax.set_title(f'Surface density within {dist_from_surf} Å of surface')
-# ax.set_xlim(minX, maxX)
-# ax.set_ylim(minY, maxY)
-
-
-# plt.show()
-
-# # %%
-# # # create a dummy array 
-# # arr = np.arange(1,11).reshape(2,5) 
-# # print(arr) 
-  
-# # convert array into dataframe 
-# u_pos_xy_df = pd.DataFrame(u_pos_xy) 
-  
-# # save the dataframe as a csv file 
-# u_pos_xy_df.to_csv("u_pos_xy.csv")
-
-
-
-# # %%
-# # convert array into dataframe 
-# at_pos_xy_df = pd.DataFrame(at_xy) 
-  
-# # save the dataframe as a csv file 
-# at_pos_xy_df.to_csv("at_pos_xy.csv")
-
-# # %%
-# # convert array into dataframe 
-# mgo_pos_xy_df = pd.DataFrame(mgo_xy) 
-  
-# # save the dataframe as a csv file 
-# mgo_pos_xy_df.to_csv("mgo_pos_xy.csv")
-
-# # %%
-# #org = u.select_atoms('resname MAL')
-# #org_positions = np.transpose(org.positions)
-
-# #org_min_z = np.min(org_positions[2])
-# #org_max_z = np.max(org_positions[2])
-
-# #print(org_min_z, org_max_z)  
-
-# # %% [markdown]
-# # CONTOUR PLOT DONT USE
-
-# # %%
-# # #CONTOUR PLOT
-# # # find values between 12 and 16 in all_models['Z']
-# # #values = np.vstack([all_models[(all_models['Z']>6) & (all_models['Z']<13)]['X'],
-# #     #                all_models[(all_models['Z']>6) & (all_models['Z']<13)]['Y']])
-# # # values = np.vstack([all_models[all_models['Z']>12]['X'], all_models[all_models['Z']>12]['Y']])
-
-# # values = u_pos_all_x, u_pos_all_y
-
-# # xx, yy = np.mgrid[minX:maxX:1000j, minY:maxY:1000j]
-# # kernel = st.gaussian_kde(values)
-# # #f = np.reshape(kernel(values), xx.T.shape)
-
-# # print('gaussian fit done')
-# # fig = plt.figure(figsize=(8,8))
-# # ax = fig.gca()
-# # ax.set_xlim(minX, maxX)
-# # ax.set_ylim(minY, maxY)
-# # cfset = ax.contourf(xx, yy)
-# # ax.imshow(f, extent=[minX, maxX, minY, maxY])
-# # cset = ax.contour(xx, yy, colors='k')
-
-# # plt.title('2D Gaussian Kernel density estimation')
-# # plt.show()
-
-# # %% [markdown]
-# # SCATTER PLOT, USE
-
-# # %%
-# # # create empty list, here the x and y coordinates of selected atoms will be iteratively added
-# # surface1 = []
-
-# # # iterate through the trajectory
-# # for ts in u.trajectory:
-# # # 
-# #     # dynamic clay positions
-# #  #   clay = u.select_atoms('resname UC*') # select all clay mesocells
-# # #    clay_positions = np.transpose(clay.positions) # transpose to make x,y,z separate columns
-# #   #  clay_min_z, clay_max_z = np.min(clay_positions[2]), np.max(clay_positions[2]) # min z, max z
-    
-# #     # dynamic actinyl positions
-# #     ano2 = u.select_atoms('name Uo* No*') # select all actinyls
-# #     ano2_positions = np.transpose(ano2.positions) # transpose to make x,y,z separate columns
-# #     ano2_min_z, ano2_max_z = np.min(ano2_positions[2]), np.max(ano2_positions[2]) # min z, max z
-
-# #     if ano2_max_z - clay_max_z <= 5:
-# #         surface1.append(ano2_positions[0:2])
-
-    
-# # #print(surface1)
-
-# # %%
-
-# # # find values between 12 and 16 in all_models['Z']
-# # values = surface1
-# # # values = np.vstack([all_models[all_models['Z']>12]['X'], all_models[all_models['Z']>12]['Y']])
-
-
-
-# # kernel = st.gaussian_kde(values)
-# # f = np.reshape(kernel(positions), xx.T.shape)
-
-# # print('gaussian fit done')
-# # fig = plt.figure(figsize=(8,8))
-# # ax = fig.gca()
-# # ax.set_xlim(minX, maxX)
-# # ax.set_ylim(minY, maxY)
-# # cfset = ax.contourf(xx, yy, f)
-# # ax.imshow(f, extent=[minX, maxX, minY, maxY])
-# # cset = ax.contour(xx, yy, f, colors='k')
-
-# # plt.title('2D Gaussian Kernel density estimation')
-# # plt.show()
-
-# # %%
-
-
-
