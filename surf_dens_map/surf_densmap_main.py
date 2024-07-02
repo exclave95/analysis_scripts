@@ -161,8 +161,7 @@ def top_side():
 
     # store MGO positions in np array for later
     mgo_xy = mgo_pos[0:,0:2]
-    #print(np.shape(mgo_xy))
-
+    
     # select only x and y coordinates
     all_mgo_x = np.transpose(mgo_xy)[0]
     all_mgo_y = np.transpose(mgo_xy)[1]
@@ -190,16 +189,12 @@ def top_side():
         
         # create empty array to fill with coordinates
         pos = np.empty((0,3))
-    
-        # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-        
+            
         # iterate through trajectory between selected frames
         for ts in u.trajectory[frame_start:frame_stop]:
             dynamic_sel # run the dynamic selection defined earlier
             pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
-            
-            #print(np.shape(pos)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-            
+                        
             # for each atom (row) in pos_dyn, vertically stack atom positions
             for j in pos_dyn: 
                 pos = np.vstack((pos, pos_dyn))
@@ -333,13 +328,10 @@ def bottom_side():
     #print(np.shape(mgo_pos))
     # store MGO positions in np array for later
     mgo_xy = mgo_pos[0:,0:2]
-    #print(np.shape(mgo_xy))
 
     # select only x and y coordinates
     all_mgo_x = np.transpose(mgo_xy)[0]
     all_mgo_y = np.transpose(mgo_xy)[1]
-    #print(np.shape(all_mgo_x), all_mgo_x)
-    #print(np.shape(all_mgo_y), all_mgo_y)
 
     if csv == 'yes':
         # convert array into dataframe 
@@ -364,9 +356,7 @@ def bottom_side():
         
         # create empty array to fill with coordinates
         pos = np.empty((0,3))
-    
-        # print(np.shape(list)) - not needed, was only necessary as sanity check while writing to ensure data shape was correct
-        
+            
         # iterate through trajectory between selected frames
         for ts in u.trajectory[frame_start:frame_stop]:
             dynamic_sel # run the dynamic selection defined earlier
