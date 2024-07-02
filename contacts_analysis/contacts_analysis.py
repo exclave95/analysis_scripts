@@ -45,7 +45,7 @@ parser.add_argument('-t', help='trajectory file')
 parser.add_argument('-s', default='topol.tpr', help='topology file')
 # parser.add_argument('-r', help='size of sampling radius to define a contact') - commented since I define my radii in the code itself
 parser.add_argument('-ref', help='reference species')
-parser.add_argument('-sel', help='selection species. NOTE: string needs to be in quotation marks, separate selections with comma + space, e.g. 'resname A, resname B')
+parser.add_argument('-sel', help='selection species. NOTE: string needs to be in quotation marks, separate selections with comma + space, e.g. 'resname A, resname B'')
 # parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
@@ -93,7 +93,7 @@ group_a = u.select_atoms(f'{ref}')
 # NEW VERSION
 # create separate array for frames only
 frames = []
-for ts in u.trajectory[-5000:-1]:
+for ts in u.trajectory[frame_start:frame_stop]:
     frames.append([ts.frame])
 #convert to array
 results = np.array(frames)
