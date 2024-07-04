@@ -22,6 +22,9 @@ parser.add_argument('-sel', help='selection species. NOTE: string needs to be in
 # parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
+parser.add_argument('-stdev', default = 1, help='number of stdevs to plot for uncertainty')
+parser.add_argument('-radius', help='pick uniform radius for all selections')
+parser.add_argument('-aw', default = 100, help="averaging window for plotting. default 100")
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
@@ -33,6 +36,9 @@ topol = args['s']
 #ts = int(args['ts'])
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
+stdev = int(args['stdev'])
+radius = int(args['radius'])
+aw = int(args['aw'])
 
 # logging 
 logname = "contacts_analysis.log"
@@ -84,25 +90,30 @@ for i in sel:
     
     # define radius depending on the ref/sel pair
     #### for future version of this code - consider creating a separate file where these distances are defined and just "importing it" here as the code runs ####
-    if ref == 'type Uo1' or ref == 'name Uo1':
-        if i == 'name OW*':
-            radius = 2.46
-        elif i == 'type OG2D2':
-            radius = 2.34
-        elif i == 'name Oc*':
-            radius = 2.38
-        elif i == 'name OB*':
-            radius = 2.46
-    elif ref == 'type No1' or ref == 'name No1':
-        if i == 'name OW*':
-            radius = 2.54
-        elif i == 'type OG2D2':
-            radius = 2.42
-        elif i == 'name Oc*':
-            radius = 2.46
-        elif i == 'name OB*':
-            radius = 2.46
-    
+    # if a radius was specified (i.e. a uniform sphere), do nothing
+    if radius:
+        pass
+    # otherwise, use the following definitions
+    else:
+        if ref == 'type Uo1' or ref == 'name Uo1':
+            if i == 'name OW*':
+                radius = 2.46
+            elif i == 'type OG2D2':
+                radius = 2.34
+            elif i == 'name Oc*':
+                radius = 2.38
+            elif i == 'name OB*':
+                radius = 2.46
+        elif ref == 'type No1' or ref == 'name No1':
+            if i == 'name OW*':
+                radius = 2.54
+            elif i == 'type OG2D2':
+                radius = 2.42
+            elif i == 'name Oc*':
+                radius = 2.46
+            elif i == 'name OB*':
+                radius = 2.46
+        
     #run the analysis
     run = contacts_within_cutoff(u, group_a, group_b, radius) 
     run = np.transpose(run)
@@ -137,13 +148,13 @@ transposed_results_df.iloc[:,0]
 # %%
 for i in sel:
     dataset = transposed_results_df[i]
-    dataset_rollavg = dataset.rolling(100).mean()
-    dataset_mstd = dataset.rolling(100).std()
+    dataset_rollavg = dataset.rolling(aw).mean()
+    dataset_mstd = dataset.rolling(aw).std()
     dataset_rollavg.plot()
     #### alt plotting method
     #import seaborn as sns
     #sns.lineplot(data = dataset_rollavg, label = f'{i}')
-    plt.fill_between(dataset.index, dataset_rollavg - 2 * dataset_mstd, dataset_rollavg + 2 * dataset_mstd, alpha=0.4)
+    plt.fill_between(dataset.index, dataset_rollavg - stdev * dataset_mstd, dataset_rollavg + stdev * dataset_mstd, alpha=0.4)
 
 plt.xlabel('Frame')
 plt.legend()
