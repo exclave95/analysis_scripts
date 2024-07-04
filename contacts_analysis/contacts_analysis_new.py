@@ -39,7 +39,7 @@ topol = args['s']
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 stdev = int(args['stdev'])
-radius = int(args['radius'])
+radius = float(args['radius'])
 aw = int(args['aw'])
 
 # logging 
