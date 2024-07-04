@@ -27,7 +27,7 @@ parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-stdev', default = 1, help='number of stdevs to plot for uncertainty')
 parser.add_argument('-radius', help='pick uniform radius for all selections')
 parser.add_argument('-aw', default = 100, help="averaging window for plotting. default 100")
-parser.add_argument('-csv', default = 'yes', choices=['yes','no'] help="save results to csv? default yes")
+parser.add_argument('-csv', default = 'yes', choices=['yes','no'], help="save results to csv? default yes")
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
