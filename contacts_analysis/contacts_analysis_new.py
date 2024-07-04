@@ -27,6 +27,7 @@ parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-stdev', default = 1, help='number of stdevs to plot for uncertainty')
 parser.add_argument('-radius', help='pick uniform radius for all selections')
 parser.add_argument('-aw', default = 100, help="averaging window for plotting. default 100")
+parser.add_argument('-csv', default = 'yes', choices=['yes','no'] help="save results to csv? default yes")
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
@@ -41,6 +42,7 @@ frame_stop = int(args['stop'])
 stdev = int(args['stdev'])
 radius = float(args['radius'])
 aw = int(args['aw'])
+csv = args['csv']
 
 # logging 
 logname = "contacts_analysis.log"
@@ -149,6 +151,8 @@ contacts_labels.extend(sel)
 transposed_results_df.columns = contacts_labels
 transposed_results_df.iloc[:,0]
 
+if csv == 'yes':
+    transposed_results_df.to_csv(f"{plot_title}.csv")
 
 # %%
 # print(transposed_results_df.iloc[0:,0:1])
