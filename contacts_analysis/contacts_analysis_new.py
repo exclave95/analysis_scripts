@@ -54,6 +54,15 @@ logger.setLevel(logging.INFO)
 logger.info(" ".join(sys.argv))
 logger.info("")
 
+# plot title for later
+num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
+if radius:
+    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw_{radius}A'
+else:
+    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw_indivradii'
+plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
+
+
 # define universe
 u = mda.Universe(topol, traj)
 
@@ -162,9 +171,9 @@ plt.xlabel('Frame')
 plt.legend()
 plt.ylabel('contacts')
 
-num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
-plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}'
-plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
+# num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
+# plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
+# plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 plt.savefig(f'{plot_title}.png', bbox_inches='tight') # save figure
 
 
