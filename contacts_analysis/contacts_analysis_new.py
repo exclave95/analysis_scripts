@@ -160,6 +160,8 @@ if csv == 'yes':
 # contacts_only_df = transposed_results_df.iloc[:, 1:]
 # contacts_only_df
 
+### ADD LINESTYLE CYCLER ###
+
 # %%
 for i in sel:
     dataset = transposed_results_df[i]
