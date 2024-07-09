@@ -14,7 +14,7 @@
 #       -sel : selection of species, in quotation marks, comma separated selections (e.g. "resname SOL, resname Na")
 #       -start : first trajectory frame to analyse
 #       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
-#       -plot : type of plot to generate. Options: heatmap (default), scatter
+#       -plot : type of plot to generate. Options: heatmap (default, recommended), scatter
 #       -side : which 'face' to sample. Options: top (default), bottom, both. 
 #               Note 1: 'top' and 'bottom' refer to the z-coordinates of exposed clay surfaces.
 #               Top = maximum z-coords, bottom = minimum z-coords
