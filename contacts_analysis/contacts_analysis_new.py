@@ -3,12 +3,12 @@
 # %%
 import numpy as np
 import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 from MDAnalysis.analysis import contacts
 import argparse
 import logging
-#%matplotlib inline
 import warnings
 import sys
 from cycler import cycler
@@ -168,6 +168,7 @@ default_cycler = (cycler(color=['r', 'g', 'b', 'y']) +
 
 # %%
 for i in sel:
+    mpl.style.use('seaborn-v0_8')
     dataset = transposed_results_df[i]
     dataset_rollavg = dataset.rolling(aw).mean()
     dataset_mstd = dataset.rolling(aw).std()
