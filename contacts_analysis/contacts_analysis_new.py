@@ -11,6 +11,8 @@ import logging
 #%matplotlib inline
 import warnings
 import sys
+from cycler import cycler
+
 # suppress some MDAnalysis warnings when writing PDB files
 warnings.filterwarnings('ignore')
 
@@ -160,7 +162,9 @@ if csv == 'yes':
 # contacts_only_df = transposed_results_df.iloc[:, 1:]
 # contacts_only_df
 
-### ADD LINESTYLE CYCLER ###
+### LINESTYLE CYCLER ###
+default_cycler = (cycler(color=['r', 'g', 'b', 'y']) +
+                  cycler(linestyle=['-', '--', ':', '-.']))
 
 # %%
 for i in sel:
@@ -173,6 +177,7 @@ for i in sel:
     #sns.lineplot(data = dataset_rollavg, label = f'{i}')
     plt.fill_between(dataset.index, dataset_rollavg - stdev * dataset_mstd, dataset_rollavg + stdev * dataset_mstd, alpha=0.4)
 
+plt.rc('axes', prop_cycle = default_cycler)
 plt.xlabel('Frame')
 plt.legend()
 plt.ylabel('contacts')
