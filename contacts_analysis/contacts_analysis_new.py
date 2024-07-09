@@ -168,7 +168,6 @@ default_cycler = (cycler(color=['r', 'g', 'b', 'y']) +
 
 # %%
 for i in sel:
-    mpl.style.use('seaborn-v0_8')
     dataset = transposed_results_df[i]
     dataset_rollavg = dataset.rolling(aw).mean()
     dataset_mstd = dataset.rolling(aw).std()
@@ -178,6 +177,7 @@ for i in sel:
     #sns.lineplot(data = dataset_rollavg, label = f'{i}')
     plt.fill_between(dataset.index, dataset_rollavg - stdev * dataset_mstd, dataset_rollavg + stdev * dataset_mstd, alpha=0.4)
 
+plt.grid()
 plt.rc('axes', prop_cycle = default_cycler)
 plt.xlabel('Frame')
 plt.legend()
