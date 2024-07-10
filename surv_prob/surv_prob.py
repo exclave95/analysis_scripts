@@ -103,8 +103,8 @@ for i in sel:
     # original function takes no account for time between frames
     # so while tau is defined in terms of time in original documentation, it isn't necessarily the case
     # hence, I introduce a multiplier here - the difference between frames is 2 ps, i.e. 0.002 ns (50 000 frames == 100 000 ps == 100 ns)
-    multiplier = 2
-    time_timeseries = [x * multiplier for x in tau_timeseries]
+    # multiplier = 2
+    time_timeseries = [x * ts for x in tau_timeseries]
     # END OF MODIFICATION
 
     sp_timeseries = sp.sp_timeseries
