@@ -44,6 +44,7 @@ import MDAnalysis as mda
 import argparse
 import sys
 import logging
+from time import time
 
 # parse user input arguments
 parser = argparse.ArgumentParser(description="Specify analysis options")
@@ -86,6 +87,8 @@ logger.setLevel(logging.INFO)
 logger.info(" ".join(sys.argv))
 logger.info("")
         
+# start time
+start_time = time.time()
 
 # define universe
 u = mda.Universe(topol, traj)
@@ -457,3 +460,11 @@ elif side == 'bottom':
 elif side == 'both':
     top_side()
     bottom_side()
+
+
+end_time = time.time()
+
+# record execution time for benchmarking
+execution_time = end_time - start_time
+with open('surfdensmap.log', 'a') as write_time:
+    write_time.write(f'{execution_time}')
