@@ -88,8 +88,7 @@ u = mda.Universe(topol, traj)
 
 #%%
 # MAIN CELL #
-
-from cycler import cycler
+# plot formatting cycler - line colours and line styles
 default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
                   cycler(linestyle=['-', '--', ':', '-.']))
 
@@ -113,8 +112,10 @@ for i in sel:
         print("{time} {sp}".format(time=tau, sp=sp))
     plt.plot(time_timeseries, sp_timeseries, label = i)
 
-plt.grid()
+# ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
 plt.rc('axes', prop_cycle = default_cycler)
+plt.grid()
+
 plt.xlabel('Time')
 plt.ylabel('SP')
 plt.legend()
