@@ -116,7 +116,7 @@ for i in sel:
 plt.rc('axes', prop_cycle = default_cycler)
 plt.grid()
 
-plt.xlabel('Time')
+plt.xlabel('Time (ns)')
 plt.ylabel('SP')
 plt.legend()
 plt.title('survival probability')
@@ -129,3 +129,5 @@ plot_title = f'{i}_survprob_frame{frame_start}to{frame_stop}_tau{taumax}_ref{ref
 plot_title = plot_title.replace(' ','_')
 #save figure
 plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+
+# Still need to add curve fitting and change from line plot to scatter plot
