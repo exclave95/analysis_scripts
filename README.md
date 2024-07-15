@@ -2,9 +2,11 @@
 
 + Written in Python.
 + Installation pre-requisites:
-++ MDAnalysis
-  numpy
+1. MDAnalysis
+2. numpy
+3. matplotlib
+4. pandas
 
 #### USAGE:
 + The scripts were written and tested with GROMACS trajectories.
-+ They are intended to be run in the command line, taking various GROMACS-like arguments.
++ The scripts are intended to be run in the command line, taking GROMACS-like arguments (e.g. -t trajout.xtc -s topol.tpr).
