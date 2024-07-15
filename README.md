@@ -1,7 +1,9 @@
 ## Analysis scripts for molecular dynamics simulations created by Jakub LIČKO during his PhD programme.
 
 + Written in Python.
-+ Main additional library that needs to be installed is MDAnalysis.
++ Installation pre-requisites:
+++ MDAnalysis
+  numpy
 
 #### USAGE:
 + The scripts were written and tested with GROMACS trajectories.
