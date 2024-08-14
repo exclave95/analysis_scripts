@@ -16,6 +16,8 @@
 #       -start : first trajectory frame to analyse
 #       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
 #       -csv : save info to csv file? 
+#       -taumax : number of frames to compute SP for
+#       -plot : type pf plot (scatter or line)
 #
 #  PREREQUISITES
 #   (1) Installed python libraries: 
@@ -33,6 +35,7 @@ import numpy as np
 # import matplotlib as mpl
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
+from MDAnalysis.analysis.waterdynamics import SurvivalProbability as SP
 import argparse
 import sys
 import logging
@@ -50,6 +53,8 @@ parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-taumax', default=20, help='number of frames to compute SP for - note that this may be converted to time with the -ts flag')
+# parser.add_argument('-plot', default='scatter', choices=['scatter', 'line'], help='type of plot. options: line, scatter')
+
 
 # parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 args = vars(parser.parse_args())
@@ -64,12 +69,14 @@ ts = int(args['ts'])
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 taumax = int(args['taumax'])
+# plot_type = args['plot'])
+
 # csv = args['csv']
 
 
 # logging 
-logname = "surfdensmap.log"
-logger = logging.getLogger("surfdensmap")
+logname = "surv_prob.log"
+logger = logging.getLogger("surv_prob")
 fh = logging.FileHandler(logname)
 ch = logging.StreamHandler()
 logger.addHandler(fh)
@@ -89,8 +96,16 @@ u = mda.Universe(topol, traj)
 #%%
 # MAIN CELL #
 # plot formatting cycler - line colours and line styles
-default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
-                  cycler(linestyle=['-', '--', ':', '-.']))
+# default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
+                #   cycler(linestyle=['-', '--', ':', '-.']))
+
+import itertools
+
+# define scatter plot colours and markers
+marker = itertools.cycle(('o', '+', 'x', '*'))
+colours = itertools.cycle(("red", "green", "blue", "orange"))
+
+fig, ax = plt.subplots()
 
 for i in sel:
     select = f"{i} and sphzone {radius} {ref}"
@@ -110,16 +125,21 @@ for i in sel:
     # print in console
     for tau, sp in zip(tau_timeseries, sp_timeseries):
         print("{time} {sp}".format(time=tau, sp=sp))
-    plt.plot(time_timeseries, sp_timeseries, label = i)
+    
+    # plotting
+    # if plot_type == 'scatter':
+    plt.scatter(time_timeseries, sp_timeseries, label = i, marker=next(marker))
+    # else:
+    #     plt.plot(time_timeseries, sp_timeseries, label = i)
 
 # ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
-plt.rc('axes', prop_cycle = default_cycler)
+# plt.rc('axes', prop_cycle = default_cycler)
 plt.grid()
 
-plt.xlabel('Time (ns)')
-plt.ylabel('SP')
-plt.legend()
-plt.title('survival probability')
+ax.set_xlabel('Time (ns)')
+ax.set_ylabel('SP')
+ax.legend()
+plt.title(f'SP - {radius} A of {ref}')
 
 #%%
 # SAVING     
@@ -130,4 +150,5 @@ plot_title = plot_title.replace(' ','_')
 #save figure
 plt.savefig(f'{plot_title}.png', bbox_inches='tight')
 
-# Still need to add curve fitting and change from line plot to scatter plot
+# TO DO:
+# need to add curve fitting for the lines generated
