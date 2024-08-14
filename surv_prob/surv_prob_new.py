@@ -17,7 +17,7 @@
 #       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
 #       -csv : save info to csv file? 
 #       -taumax : number of frames to compute SP for
-#       -plot : type pf plot (scatter or line) ### REMOVED ###
+#       -plot : type pf plot (scatter or line)
 #
 #  PREREQUISITES
 #   (1) Installed python libraries: 
