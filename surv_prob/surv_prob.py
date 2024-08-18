@@ -22,7 +22,6 @@
 #
 #   Required installed python libraries: 
 #       numpy
-#       pandas
 #       matplotlib.pyplot
 #       itertools
 #       scipy
@@ -35,7 +34,6 @@
 #       cycler
 
 import numpy as np 
-import pandas as pd
 # import matplotlib as mpl
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
@@ -179,18 +177,16 @@ for i in sel:
     # MODIFICATION 2 - saving to CSV file 
     if csv == 'yes':
         print(f'Saving {i} values into csv file')
-        # convert array into dataframe 
         surv_prob_data = time_timeseries, sp_timeseries
         surv_prob_data = np.transpose(surv_prob_data)
-        surv_prob_data_df = pd.DataFrame(surv_prob_data) 
         
         # define filename, replace whitespaces with underscores and asterisks with 'all' 
         csv_filename = f'{i}_surv_prob'
         csv_filename = csv_filename.replace(' ','_')
         csv_filename = csv_filename.replace('*','all')
 
-        # save the dataframe as a csv file 
-        surv_prob_data_df.to_csv(f"{csv_filename}.csv")
+        # save as a csv file 
+        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of {i} within {radius} A of {sel}')  
 
     else:
         print('Survival probability not being saved')   
