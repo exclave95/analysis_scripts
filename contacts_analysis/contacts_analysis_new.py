@@ -30,6 +30,8 @@ parser.add_argument('-stdev', default = 1, help='number of stdevs to plot for un
 parser.add_argument('-radius', help='pick uniform radius for all selections')
 parser.add_argument('-aw', default = 100, help="averaging window for plotting. default 100")
 parser.add_argument('-csv', default = 'yes', choices=['yes','no'], help="save results to csv? default yes")
+parser.add_argument('-test', choices=['median','average'], help="save results to csv? default yes")
+
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
@@ -45,6 +47,7 @@ stdev = int(args['stdev'])
 radius = float(args['radius'])
 aw = int(args['aw'])
 csv = args['csv']
+test = args['test']
 
 # logging 
 logname = "contacts_analysis.log"
@@ -61,9 +64,9 @@ logger.info("")
 # plot title for later
 num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
 if radius:
-    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw_{radius}A'
+    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{test}_{stdev}stdev_{aw}aw_{radius}A'
 else:
-    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw_indivradii'
+    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{test}_{stdev}stdev_{aw}aw_indivradii'
 plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 
 
@@ -163,30 +166,58 @@ if csv == 'yes':
 # contacts_only_df
 
 ### LINESTYLE CYCLER ###
-default_cycler = (cycler(color=['r', 'g', 'b', 'y']) +
+default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
                   cycler(linestyle=['-', '--', ':', '-.']))
 
 # %%
-for i in sel:
-    dataset = transposed_results_df[i]
-    dataset_rollavg = dataset.rolling(aw).mean()
-    dataset_mstd = dataset.rolling(aw).std()
-    dataset_rollavg.plot()
-    #### alt plotting method
-    #import seaborn as sns
-    #sns.lineplot(data = dataset_rollavg, label = f'{i}')
-    plt.fill_between(dataset.index, dataset_rollavg - stdev * dataset_mstd, dataset_rollavg + stdev * dataset_mstd, alpha=0.4)
+fig, ax = plt.subplots()
 
-plt.grid()
-plt.rc('axes', prop_cycle = default_cycler)
-plt.xlabel('Frame')
-plt.legend()
-plt.ylabel('contacts')
 
-# num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
-# plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
-# plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
-plt.savefig(f'{plot_title}.png', bbox_inches='tight') # save figure
+#%% if rolling AVERAGE
+
+if test == 'average':
+    for i in sel:
+        dataset = transposed_results_df[i]
+        dataset_rollavg = dataset.rolling(aw).mean()
+        dataset_mstd = dataset.rolling(aw).std()
+        dataset_rollavg.plot()
+        #### alt plotting method
+        #import seaborn as sns
+        #sns.lineplot(data = dataset_rollavg, label = f'{i}')
+        plt.fill_between(dataset.index, dataset_rollavg - stdev * dataset_mstd, dataset_rollavg + stdev * dataset_mstd, alpha=0.4)
+
+    plt.grid()
+    plt.rc('axes', prop_cycle = default_cycler)
+    ax.set_xlabel('Frame')
+    ax.legend()
+    ax.set_ylabel('contacts')
+
+    # num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
+    # plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
+    # plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
+    plt.savefig(f'{plot_title}.png', bbox_inches='tight') # save figure
+
+
+#%% if rolling MEDIAN
+elif test == "median":
+    for i in sel:
+        dataset = transposed_results_df[i]
+        dataset_rollmedian = dataset.rolling(aw).median()
+        dataset_rollmedian.plot()
+        #### alt plotting method
+        #import seaborn as sns
+        #sns.lineplot(data = dataset_rollavg, label = f'{i}')
+
+    plt.grid()
+    plt.rc('axes', prop_cycle = default_cycler)
+    ax.set_xlabel('Frame')
+    ax.legend()
+    ax.set_ylabel('contacts')
+
+    # num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
+    # plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
+    # plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
+    plt.savefig(f'{plot_title}.png', bbox_inches='tight') # save figure
 
 
 # %%
