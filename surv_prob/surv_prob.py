@@ -92,7 +92,7 @@ logger.info(" ".join(sys.argv))
 logger.info("")
         
 # start time
-start_time = time.time()
+# start_time = time.time()
 
 # define universe
 u = mda.Universe(topol, traj)
@@ -107,17 +107,22 @@ def surv_prob_curve_fit():
     y = sp_timeseries
 
     # curve fitting
+    # give parameters global scope (so the code can recognise them outside the function)
+    global popt, pcov, a, k, c, x_fitted, y_fitted
+    
+    # define optimization parameters and their covariance coefficients
     popt, pcov = curve_fit(lambda t, a, k, c: a * (np.exp(-k * t)) + c, x, y)
 
-    # define a, b and c
+    # define a, b and c 
     a = popt[0]
     k = popt[1]
     c = popt[2]
 
+    # define fitted x and y
     x_fitted = np.linspace(np.min(x), np.max(x), 100)
     y_fitted = a * np.exp(-k * x_fitted) + c
     
-    # 
+    # LEGACY plotting code, kept from original curve_fit tutorial (link: HERE)
     # ax = plt.axes()
     # ax.scatter(x, y, label='Raw data')
     # ax.plot(x_fitted, y_fitted, 'k', label='Fitted curve')
@@ -129,12 +134,12 @@ def surv_prob_curve_fit():
 
 
 # create results file
-with open("surv_prob.txt", "w") as file:
+with open("surv_prob_results.txt", "w") as file:
     file.write('Survival Probability')
     file.write('\n--------------')
-    file.write(f"\nCurrent directory: {cwd}")
-    file.write(f'\nref {ref}\nsel {sel}')
-    file.write(f'\nradius {radius}\nframe {frame_start} to {frame_stop}\ntau{taumax}')
+    file.write(f"\nCalculated in directory: {cwd}")
+    file.write(f'\nReference: {ref}\nFull selection: {sel}')
+    file.write(f'\nradius: {radius} Angstroms\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
 
 #%%
 # MAIN CELL #
@@ -178,9 +183,15 @@ for i in sel:
         surv_prob_data = time_timeseries, sp_timeseries
         surv_prob_data = np.transpose(surv_prob_data)
         surv_prob_data_df = pd.DataFrame(surv_prob_data) 
-            
+        
+        # define filename, replace whitespaces with underscores and asterisks with 'all' 
+        csv_filename = f'{i}_surv_prob'
+        csv_filename = csv_filename.replace(' ','_')
+        csv_filename = csv_filename.replace('*','all')
+
         # save the dataframe as a csv file 
-        surv_prob_data_df.to_csv(f"{i}_surv_prob.csv")
+        surv_prob_data_df.to_csv(f"{csv_filename}.csv")
+
     else:
         print('Survival probability not being saved')   
     # END OF MODIFICATION 2
@@ -190,22 +201,24 @@ for i in sel:
     surv_prob_curve_fit()
     
     # append results to txt file
-    with open('surv_prob.txt', 'a') as file:
+    with open('surv_prob_results.txt', 'a') as file:
+        file.write('\n--------------------')
         file.write(f'\n{i}')
         file.write(f'\na = {a}\nk = {k}\nc = {c}')
-        file.write('\n--------------------')
+  
     # END OF MODIFICATION 3
 
     # plotting
-    plt.scatter(time_timeseries, sp_timeseries, label = i, c=next(colours), marker=next(marker))
-    plt.plot(time_timeseries, y_fitted, c=next(colours))
+    colour = next(colours) #ensures same colour for both points and curve
+    plt.scatter(time_timeseries, sp_timeseries, label = i, c=colour, marker=next(marker))
+    plt.plot(x_fitted, y_fitted, c=colour)
 
 
 # ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
 # plt.rc('axes', prop_cycle = default_cycler)
 plt.grid()
 
-ax.set_xlabel('Time (ns)')
+ax.set_xlabel('Time (ps)')
 ax.set_ylabel('SP')
 # ax.legend()
 plt.title(f'SP - {radius} A of {ref}')
@@ -214,9 +227,9 @@ plt.title(f'SP - {radius} A of {ref}')
 # PLOT GENERATION AND SAVING     
 
 # define plot title
-plot_title = f'{i}_survprob_frame{frame_start}to{frame_stop}_tau{taumax}_ref{ref}'
+plot_title = f'survprob_frame{frame_start}to{frame_stop}_tau{taumax}_ref{ref}'
 
-#replace whitespaces with underscores
+#replace whitespaces with underscores and asterisks with
 plot_title = plot_title.replace(' ','_')
 
 #save figure
