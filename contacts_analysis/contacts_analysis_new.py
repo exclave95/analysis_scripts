@@ -1,4 +1,31 @@
-### contacts analysis for multiple selections
+#! /usr/bin/python
+#
+##### MULTIPLE CONTACT ANALYSIS AND PLOTTING ##### 
+#              Written by Jakub LICKO, MChem       
+# Based on and adapted from the instructions in official MDAnalysis documentation: 
+# https://userguide.mdanalysis.org/stable/examples/analysis/distances_and_contacts/distances_between_atomgroups.html
+#
+#  INSTRUCTIONS
+#  Example command line input:
+#       python contacts_analysis.py -t trajout.xtc -s topol.tpr -ref "name Uo1" -sel "name OW*, name OG2D2" -start 45000 -stop -1
+#  Flags:
+#       -t : centred trajectory file
+#       -s : topology file (tpr for GROMACS)
+#       -ref : reference atom
+#       -sel : selection of species, in quotation marks, comma separated selections (e.g. "resname SOL, resname Na")
+#       -start : first trajectory frame to analyse
+#       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
+#
+#  PREREQUISITES
+#  Installed python libraries: 
+#       numpy
+#       pandas
+#       matplotlib.pyplot
+#       MDAnalysis
+#       argparse
+#       sys
+#       logging
+
 
 # %%
 import numpy as np
@@ -77,7 +104,7 @@ u = mda.Universe(topol, traj)
 # create analyser
 def contacts_within_cutoff(u, group_a, group_b, radius):
     timeseries = []
-    for ts in u.trajectory[frame_start:frame_stop]: # these values are FRAMES, not TIMES. since t between frames is 2 ps, this is 90000 to 100000 ps
+    for ts in u.trajectory[frame_start:frame_stop]: # these values are FRAMES, not TIMES
         # calculate distances between group_a and group_b
         dist = contacts.distance_array(group_a.positions, group_b.positions)
         # determine which distances <= radius
@@ -173,8 +200,8 @@ default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
 fig, ax = plt.subplots()
 
 
-#%% if rolling AVERAGE
-
+#%% analysis 
+# option: rolling AVERAGE
 if test == 'average':
     for i in sel:
         dataset = transposed_results_df[i]
@@ -197,8 +224,7 @@ if test == 'average':
     # plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
     plt.savefig(f'{plot_title}.png', bbox_inches='tight') # save figure
 
-
-#%% if rolling MEDIAN
+# option: rolling MEDIAN
 elif test == "median":
     for i in sel:
         dataset = transposed_results_df[i]
