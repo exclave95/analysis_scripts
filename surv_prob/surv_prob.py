@@ -90,7 +90,7 @@ logger.info(" ".join(sys.argv))
 logger.info("")
         
 # start time
-# start_time = time.time()
+# start_time = time()
 
 # define universe
 u = mda.Universe(topol, traj)
@@ -98,16 +98,27 @@ u = mda.Universe(topol, traj)
 # find current directory
 cwd = os.getcwd()
 
-#define curve fitting function
+# define curve fitting function
 def surv_prob_curve_fit():
-    # data prep
+    # data prep - specifies how the SP timeseries data will be used by the function
     x = time_timeseries
     y = sp_timeseries
-
-    # curve fitting
-    # give parameters global scope (so the code can recognise them outside the function)
-    global popt, pcov, a, k, c, x_fitted, y_fitted
     
+    # fitting (x,y) data to the exponential decay curve: 
+    # y = a * exp(-k * x) + c
+
+    # parameters to be fitted: 
+    # a = pre-exponential factor 
+        # needed along with c to ensure that y is ~= 1 when x = 0
+    # k = decay coefficient 
+        # this is the key parameter for comparison between selected species
+    # c = constant, serves as the horizontal asymptote - 
+        # needed since decay curves are unlikely to approach 0, 
+        # and needed along with a to ensure y is ~= 1 when x = 0
+    
+    # give parameters global scope (so the code can recognise them when the function is called)
+    global popt, pcov, a, k, c, x_fitted, y_fitted, a_pcov, k_pcov, c_pcov
+
     # define optimization parameters and their covariance coefficients
     popt, pcov = curve_fit(lambda t, a, k, c: a * (np.exp(-k * t)) + c, x, y)
 
@@ -115,6 +126,11 @@ def surv_prob_curve_fit():
     a = popt[0]
     k = popt[1]
     c = popt[2]
+
+    # define covariance values for optimised a, b and c
+    a_pcov = pcov[0]
+    k_pcov = pcov[1]
+    c_pcov = pcov[2]
 
     # define fitted x and y
     x_fitted = np.linspace(np.min(x), np.max(x), 100)
@@ -134,7 +150,7 @@ def surv_prob_curve_fit():
 # create results file
 with open("surv_prob_results.txt", "w") as file:
     file.write('Survival Probability')
-    file.write('\n--------------')
+    file.write('\n--------------------')
     file.write(f"\nCalculated in directory: {cwd}")
     file.write(f'\nReference: {ref}\nFull selection: {sel}')
     file.write(f'\nradius: {radius} Angstroms\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
@@ -186,7 +202,7 @@ for i in sel:
         csv_filename = csv_filename.replace('*','all')
 
         # save as a csv file 
-        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of {i} within {radius} A of {sel}')  
+        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of {i} within {radius} A of {ref}\n#{cwd}')  
 
     else:
         print('Survival probability not being saved')   
@@ -201,6 +217,8 @@ for i in sel:
         file.write('\n--------------------')
         file.write(f'\n{i}')
         file.write(f'\na = {a}\nk = {k}\nc = {c}')
+        file.write(f'\n\nCovariance values:')
+        file.write(f'\npcov(a) = {a_pcov}\npcov(k) = {k_pcov}\npcov(c) = {c_pcov}')
   
     # END OF MODIFICATION 3
 
