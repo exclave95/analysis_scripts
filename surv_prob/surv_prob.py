@@ -59,6 +59,9 @@ parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save SP of ligands to csv files? Options: yes (default), no')
 parser.add_argument('-taumax', default=20, help='number of frames to compute SP for')
+parser.add_argument('-cfit', default='no', choices=['yes','no'], help='fit to exponential decay curve with specified c intercept?')
+
+
 
 # parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 args = vars(parser.parse_args())
@@ -75,6 +78,8 @@ frame_stop = int(args['stop'])
 taumax = int(args['taumax'])
 # plot_type = args['plot'])
 csv = args['csv']
+cfit = args['cfit']
+
 
 
 # logging 
@@ -104,36 +109,54 @@ def surv_prob_curve_fit():
     x = time_timeseries
     y = sp_timeseries
     
-    # fitting (x,y) data to the exponential decay curve: 
+    # fitting (x, y) data to the exponential decay curve: 
+    # y = a * exp(-k * x)
+    # OR
     # y = a * exp(-k * x) + c
 
     # parameters to be fitted: 
     # a = pre-exponential factor 
-        # needed along with c to ensure that y is ~= 1 when x = 0
     # k = decay coefficient 
         # this is the key parameter for comparison between selected species
-    # c = constant, serves as the horizontal asymptote - 
-        # needed since decay curves are unlikely to approach 0, 
-        # and needed along with a to ensure y is ~= 1 when x = 0
-    
+    # c = constant, serves as the horizontal asymptote (optional)
+
     # give parameters global scope (so the code can recognise them when the function is called)
     global popt, pcov, perr, a, k, c, x_fitted, y_fitted
 
-    # define optimization parameters and their covariance coefficients
-    popt, pcov = curve_fit(lambda t, a, k, c: a * (np.exp(-k * t)) + c, x, y)
+    if cfit == 'no':
+        # define optimization parameters and their covariance coefficients
+        
+        popt, pcov = curve_fit(lambda t, a, k: a * (np.exp(-k * t)), x, y)
 
-    # define a, b and c 
-    a = popt[0]
-    k = popt[1]
-    c = popt[2]
+        # define a, k
+        a = popt[0]
+        k = popt[1]
+        c = 'N/A'
 
-    # define fitted x and y
-    x_fitted = np.linspace(np.min(x), np.max(x), 100)
-    y_fitted = a * np.exp(-k * x_fitted) + c
+        # define fitted x and y
+        x_fitted = np.linspace(np.min(x), np.max(x), 100)
+        y_fitted = a * np.exp(-k * x_fitted)
 
-    # create array of the error values of each fitted parameter
-    # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
-    perr = np.sqrt(np.diag(pcov))
+        # create array of the error values of each fitted parameter
+        # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
+        perr = np.sqrt(np.diag(pcov))        
+
+    elif cfit == 'yes':
+        # define optimization parameters and their covariance coefficients
+        popt, pcov = curve_fit(lambda t, a, k, c: a * (np.exp(-k * t)) + c, x, y)
+
+        # define a, k and c 
+        a = popt[0]
+        k = popt[1]
+        c = popt[2]
+
+        # define fitted x and y
+        x_fitted = np.linspace(np.min(x), np.max(x), 100)
+        y_fitted = a * np.exp(-k * x_fitted) + c
+
+        # create array of the error values of each fitted parameter
+        # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
+        perr = np.sqrt(np.diag(pcov))
     
     # LEGACY plotting code, kept from original curve_fit tutorial (link: HERE)
     # ax = plt.axes()
@@ -219,8 +242,13 @@ for i in sel:
         file.write(f'\n\nCovariance matrix:')
         file.write(f'\n{pcov}')
         file.write(f'\n\nParameter error values:')
-        file.write(f'\na error = {perr[0]}\nk error = {perr[1]}\nc error = {perr[2]}')
-        
+        file.write(f'\na error = {perr[0]}\nk error = {perr[1]}')
+        # write error of c if it was calculated
+        if cfit == 'yes':
+            file.write(f'\nc error = {perr[2]}')
+        else:
+            file.write(f'\nc error = N/A')
+
     # END OF MODIFICATION 3
 
     # plotting
