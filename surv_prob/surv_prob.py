@@ -202,7 +202,7 @@ for i in sel:
         csv_filename = csv_filename.replace('*','all')
 
         # save as a csv file 
-        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of {i} within {radius} A of {ref}\n#{cwd}')  
+        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of sel {i} within {radius} A of ref {ref}\n{cwd}')  
 
     else:
         print('Survival probability not being saved')   
