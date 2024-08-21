@@ -61,8 +61,6 @@ parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save SP
 parser.add_argument('-taumax', default=20, help='number of frames to compute SP for')
 parser.add_argument('-cfit', default='no', choices=['yes','no'], help='fit to exponential decay curve with specified c intercept?')
 
-
-
 # parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 args = vars(parser.parse_args())
 
@@ -121,7 +119,7 @@ def surv_prob_curve_fit():
     # c = constant, serves as the horizontal asymptote (optional)
 
     # give parameters global scope (so the code can recognise them when the function is called)
-    global popt, pcov, perr, a, k, c, x_fitted, y_fitted
+    global popt, pcov, perr, a, k, c, x_fitted, y_fitted, cond_numb
 
     if cfit == 'no':
         # define optimization parameters and their covariance coefficients
@@ -135,11 +133,7 @@ def surv_prob_curve_fit():
 
         # define fitted x and y
         x_fitted = np.linspace(np.min(x), np.max(x), 100)
-        y_fitted = a * np.exp(-k * x_fitted)
-
-        # create array of the error values of each fitted parameter
-        # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
-        perr = np.sqrt(np.diag(pcov))        
+        y_fitted = a * np.exp(-k * x_fitted)   
 
     elif cfit == 'yes':
         # define optimization parameters and their covariance coefficients
@@ -154,10 +148,13 @@ def surv_prob_curve_fit():
         x_fitted = np.linspace(np.min(x), np.max(x), 100)
         y_fitted = a * np.exp(-k * x_fitted) + c
 
-        # create array of the error values of each fitted parameter
-        # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
-        perr = np.sqrt(np.diag(pcov))
-    
+    # create array of the error values of each fitted parameter
+    # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
+    perr = np.sqrt(np.diag(pcov))
+
+    # check for fit overparametrization with the Condition Number of the matrix
+    cond_numb = np.linalg.cond(pcov)
+
     # LEGACY plotting code, kept from original curve_fit tutorial (link: HERE)
     # ax = plt.axes()
     # ax.scatter(x, y, label='Raw data')
@@ -234,26 +231,30 @@ for i in sel:
     # the function was defined earlier in the code for clarity, and is simply called here
     surv_prob_curve_fit()
     
+    # plotting colour and markers, added to results file as legend
+    colour = next(colours) #ensures same colour for both points and curve
+    plot_marker = next(marker)
+
     # append results to txt file
     with open('surv_prob_results.txt', 'a') as file:
         file.write('\n--------------------')
-        file.write(f'\n{i}')
+        file.write(f'\n{i} ({colour} {plot_marker})')
         file.write(f'\na = {a}\nk = {k}\nc = {c}')
         file.write(f'\n\nCovariance matrix:')
         file.write(f'\n{pcov}')
-        file.write(f'\n\nParameter error values:')
+        file.write(f'\n\nParameter error values (calculated by squaring the covariance matrix diagonal values):')
         file.write(f'\na error = {perr[0]}\nk error = {perr[1]}')
         # write error of c if it was calculated
         if cfit == 'yes':
             file.write(f'\nc error = {perr[2]}')
         else:
             file.write(f'\nc error = N/A')
-
+        file.write(f'\n\nOverfitting/Overparametrization check')
+        file.write(f'\nCovariance Matrix Condition Number = {cond_numb}')
     # END OF MODIFICATION 3
-
+    
     # plotting
-    colour = next(colours) #ensures same colour for both points and curve
-    plt.scatter(time_timeseries, sp_timeseries, label = i, c=colour, marker=next(marker))
+    plt.scatter(time_timeseries, sp_timeseries, label = i, c=colour, marker=plot_marker)
     plt.plot(x_fitted, y_fitted, c=colour)
 
 
