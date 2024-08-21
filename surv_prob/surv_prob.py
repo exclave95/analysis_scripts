@@ -242,19 +242,19 @@ for i in sel:
     # append results to txt file
     with open('surv_prob_results.txt', 'a') as file:
         file.write('\n--------------------')
-        file.write(f'\n{i} ({colour} {plot_marker})')
+        file.write(f'\nCurve fit parameters for {i} ({colour} {plot_marker})')
         file.write(f'\na = {a}\nk = {k}\nc = {c}')
-        file.write(f'\n\nCovariance matrix:')
-        file.write(f'\n{pcov}')
-        file.write(f'\n\nParameter error values (calculated by squaring the covariance matrix diagonal values):')
+        file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
         file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
         # write error of c if it was calculated
         if cfit == 'yes':
             file.write(f'\nc STDEV = {perr[2]}')
         else:
-            file.write(f'\nc STDEV = N/A')
-        file.write(f'\n\nOverfitting/Overparametrization check')
-        file.write(f'\nCovariance Matrix Condition Number = {cond_numb}')
+            file.write(f'\nc STDEV = N/A')        
+        file.write(f'\n\nCovariance matrix:')
+        file.write(f'\n{pcov}')
+        file.write(f'\n\nCovariance matrix condition number (overfitting check)')
+        file.write(f'\n{cond_numb}\n')
     # END OF MODIFICATION 3
     
     # plotting
