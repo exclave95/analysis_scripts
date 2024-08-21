@@ -10,7 +10,7 @@
 ## USAGE:
 + The scripts were written and tested with GROMACS trajectories.
 + The scripts are intended to be run in the command line, taking GROMACS-like arguments (e.g. -t trajout.xtc -s topol.tpr).
-++ specific arguments for each code are specified at the top of each file
++     specific arguments for each code are specified at the top of each file
 
 ## NOTE:
 + The codes in this repository are still under active development.
