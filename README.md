@@ -1,7 +1,7 @@
 # Analysis scripts for molecular dynamics simulations 
 + Written/adapted by Jakub Ličko
 + Tested with Python version 3.8.16
-+ Python library installation pre-requisites (includes library version that was used for testing).
++ Python library installation pre-requisites (includes library version that the codes were tested with).
   1. MDAnalysis (2.4.3)
   2. numpy (1.24.3)
   3. matplotlib (3.7.1)
