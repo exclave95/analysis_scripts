@@ -150,6 +150,10 @@ def surv_prob_curve_fit():
 
     # create array of the error values of each fitted parameter
     # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
+
+    # Calculating the STDEV of each fitted parameter (popt) from the generated covariance matrix (pcov)
+    # NOTE: pcov diagonal values are the VARIANCE (sigma^2) values for each popt (off-diagonal terms are covariance values)
+    # the code below thus takes the square root of each diagonal term to calculate the Standard Deviation
     perr = np.sqrt(np.diag(pcov))
 
     # check for fit overparametrization with the Condition Number of the matrix
@@ -243,12 +247,12 @@ for i in sel:
         file.write(f'\n\nCovariance matrix:')
         file.write(f'\n{pcov}')
         file.write(f'\n\nParameter error values (calculated by squaring the covariance matrix diagonal values):')
-        file.write(f'\na error = {perr[0]}\nk error = {perr[1]}')
+        file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
         # write error of c if it was calculated
         if cfit == 'yes':
-            file.write(f'\nc error = {perr[2]}')
+            file.write(f'\nc STDEV = {perr[2]}')
         else:
-            file.write(f'\nc error = N/A')
+            file.write(f'\nc STDEV = N/A')
         file.write(f'\n\nOverfitting/Overparametrization check')
         file.write(f'\nCovariance Matrix Condition Number = {cond_numb}')
     # END OF MODIFICATION 3
@@ -278,5 +282,3 @@ plot_title = plot_title.replace(' ','_')
 
 #save figure
 plt.savefig(f'{plot_title}.png', bbox_inches='tight')
-
-
