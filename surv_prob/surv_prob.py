@@ -246,15 +246,15 @@ for i in sel:
         file.write(f'\na = {a}\nk = {k}')
         if cfit == 'yes': # record c value if it was calculated
             file.write(f'\nc = {c}')
-        else:
-            break
+        # else:
+        #     break
         file.write(f'\n\nTime constant (1/k) = {time_constant}')
         file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
         file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
         if cfit == 'yes': # record STDEV of c if it was calculated
             file.write(f'\nc STDEV = {perr[2]}')
-        else:
-            break
+        # else:
+        #     break
         file.write(f'\n\nCovariance matrix:')
         file.write(f'\n{pcov}')
         file.write(f'\n\nCovariance matrix condition number (overfitting check)')
