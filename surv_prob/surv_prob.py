@@ -12,7 +12,7 @@
 #       -s : topology file (tpr for GROMACS)
 #       -ts : time (ps) between frames. default = 2
 #       -ref : reference atom to compute SP around
-#       -radius : radius around ref to compute SP around
+#       -geom : geometrical selection around ref to compute SP around
 #       -sel : selection of species, in quotation marks, comma separated selections (e.g. "resname SOL, resname Na")
 #       -start : first trajectory frame to analyse
 #       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
@@ -52,7 +52,7 @@ parser = argparse.ArgumentParser(description="Specify analysis options")
 parser.add_argument('-t', help='trajectory file')
 parser.add_argument('-s', default='topol.tpr', help='topology file')
 parser.add_argument('-ref', help='which atom to compute a survival probability around')
-parser.add_argument('-radius', help='radius around selection to compute survival probability around')
+parser.add_argument('-geom', help='geometry relative to reference to compute survival probability in. E.g. "sphzone 12.3" ')
 parser.add_argument('-sel', help='species to sample. NOTE: string needs to be in quotation marks, separate selections with commas')
 parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
 parser.add_argument('-start', default=0, help='initial frame to read')
@@ -69,16 +69,13 @@ ref = args['ref']
 sel = args['sel'].split(', ')
 traj = args['t']
 topol = args['s']
-radius = float(args['radius'])
+geom = args['geom']
 ts = int(args['ts'])
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 taumax = int(args['taumax'])
-# plot_type = args['plot'])
 csv = args['csv']
 cfit = args['cfit']
-
-
 
 # logging 
 logname = "surv_prob.log"
@@ -96,7 +93,7 @@ logger.info("")
 # start_time = time()
 
 # define universe
-u = mda.Universe(topol, traj)
+u = mda.Universe(topol, traj, in_memory=False)
 
 # find current directory
 cwd = os.getcwd()
@@ -119,7 +116,7 @@ def surv_prob_curve_fit():
     # c = constant, serves as the horizontal asymptote (optional)
 
     # give parameters global scope (so the code can recognise them when the function is called)
-    global popt, pcov, perr, a, k, c, x_fitted, y_fitted, cond_numb
+    global popt, pcov, perr, a, k, c, x_fitted, y_fitted, cond_numb, time_constant
 
     if cfit == 'no':
         # define optimization parameters and their covariance coefficients
@@ -129,7 +126,6 @@ def surv_prob_curve_fit():
         # define a, k
         a = popt[0]
         k = popt[1]
-        c = 'N/A'
 
         # define fitted x and y
         x_fitted = np.linspace(np.min(x), np.max(x), 100)
@@ -148,9 +144,10 @@ def surv_prob_curve_fit():
         x_fitted = np.linspace(np.min(x), np.max(x), 100)
         y_fitted = a * np.exp(-k * x_fitted) + c
 
-    # create array of the error values of each fitted parameter
-    # this is done by identifying the DIAGONAL values of the covariance matrix (popt), and then calculating their square root
+    # calculate the time constant (1 / k)
+    time_constant = 1 / k 
 
+    # Additional Stats
     # Calculating the STDEV of each fitted parameter (popt) from the generated covariance matrix (pcov)
     # NOTE: pcov diagonal values are the VARIANCE (sigma^2) values for each popt (off-diagonal terms are covariance values)
     # the code below thus takes the square root of each diagonal term to calculate the Standard Deviation
@@ -169,14 +166,13 @@ def surv_prob_curve_fit():
     # ax.set_xlabel('x-Values')
     # ax.legend()
 
-
 # create results file
 with open("surv_prob_results.txt", "w") as file:
     file.write('Survival Probability')
     file.write('\n--------------------')
     file.write(f"\nCalculated in directory: {cwd}")
     file.write(f'\nReference: {ref}\nFull selection: {sel}')
-    file.write(f'\nradius: {radius} Angstroms\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
+    file.write(f'\nGeometry: {geom} \nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
 
 #%%
 # MAIN CELL #
@@ -193,7 +189,7 @@ fig, ax = plt.subplots()
 # calculation loop
 for i in sel:
     # select reference and selection pair and calculate SP for it
-    select = f"{i} and sphzone {radius} {ref}"
+    select = f"{i} and {geom} {ref}"
     sp = SP(u, select, verbose=True)
     sp.run(start=frame_start, stop=frame_stop, tau_max=taumax)
     tau_timeseries = sp.tau_timeseries
@@ -225,8 +221,7 @@ for i in sel:
         csv_filename = csv_filename.replace('*','all')
 
         # save as a csv file 
-        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of sel {i} within {radius} A of ref {ref}\n{cwd}')  
-
+        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of sel {i}, {geom} of ref {ref}\n{cwd}')  
     else:
         print('Survival probability not being saved')   
     # END OF MODIFICATION 2
@@ -243,14 +238,18 @@ for i in sel:
     with open('surv_prob_results.txt', 'a') as file:
         file.write('\n--------------------')
         file.write(f'\nCurve fit parameters for {i} ({colour} {plot_marker})')
-        file.write(f'\na = {a}\nk = {k}\nc = {c}')
+        file.write(f'\na = {a}\nk = {k}')
+        if cfit == 'yes': # record c value if it was calculated
+            file.write(f'\nc = {c}')
+        else:
+            continue
+        file.write(f'\n\nTime constant (1/k) = {time_constant}')
         file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
         file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
-        # write error of c if it was calculated
-        if cfit == 'yes':
+        if cfit == 'yes': # record STDEV of c if it was calculated
             file.write(f'\nc STDEV = {perr[2]}')
         else:
-            file.write(f'\nc STDEV = N/A')        
+            continue        
         file.write(f'\n\nCovariance matrix:')
         file.write(f'\n{pcov}')
         file.write(f'\n\nCovariance matrix condition number (overfitting check)')
@@ -261,7 +260,6 @@ for i in sel:
     plt.scatter(time_timeseries, sp_timeseries, label = i, c=colour, marker=plot_marker)
     plt.plot(x_fitted, y_fitted, c=colour)
 
-
 # ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
 # plt.rc('axes', prop_cycle = default_cycler)
 plt.grid()
@@ -269,7 +267,7 @@ plt.grid()
 ax.set_xlabel('Time (ps)')
 ax.set_ylabel('SP')
 # ax.legend()
-plt.title(f'SP - {radius} A of {ref}')
+plt.title(f'SP - {geom} of {ref}')
 
 #%%
 # PLOT GENERATION AND SAVING     
