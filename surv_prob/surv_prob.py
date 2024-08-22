@@ -173,6 +173,10 @@ with open("surv_prob_results.txt", "w") as file:
     file.write(f"\nCalculated in directory: {cwd}")
     file.write(f'\nReference: {ref}\nFull selection: {sel}')
     file.write(f'\nGeometry: {geom} \nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
+    if cfit == "no":
+        file.write(f'\nCurve fit equation: y = a * exp(-k * x)')
+    else:
+        file.write(f'\nCurve fit equation: y = a * exp(-k * x) + c')
 
 #%%
 # MAIN CELL #
@@ -184,6 +188,7 @@ with open("surv_prob_results.txt", "w") as file:
 marker = itertools.cycle(('o', '+', 'x', '*'))
 colours = itertools.cycle(("red", "green", "blue", "orange"))
 
+# initialise plotting
 fig, ax = plt.subplots()
 
 # calculation loop
