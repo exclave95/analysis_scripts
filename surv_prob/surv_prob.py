@@ -78,7 +78,7 @@ csv = args['csv']
 cfit = args['cfit']
 
 # logging 
-logname = "surv_prob.log"
+logname = "SP.log"
 logger = logging.getLogger("surv_prob")
 fh = logging.FileHandler(logname)
 ch = logging.StreamHandler()
@@ -167,9 +167,9 @@ def surv_prob_curve_fit():
     # ax.legend()
 
 # create results file
-with open("surv_prob_results.txt", "w") as file:
-    file.write('Survival Probability')
-    file.write('\n--------------------')
+with open("SP_results.txt", "w") as file:
+    file.write('Survival Probability Results')
+    file.write('\n#########################')
     file.write(f"\nCalculated in directory: {cwd}")
     file.write(f'\nReference: {ref}\nFull selection: {sel}')
     file.write(f'\nGeometry: {geom} \nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
@@ -240,7 +240,7 @@ for i in sel:
     plot_marker = next(marker)
 
     # append results to txt file
-    with open('surv_prob_results.txt', 'a') as file:
+    with open('SP_results.txt', 'a') as file:
         file.write('\n--------------------')
         file.write(f'\nCurve fit parameters for {i} ({colour} {plot_marker})')
         file.write(f'\na = {a}\nk = {k}')
@@ -278,7 +278,7 @@ plt.title(f'SP - {geom} of {ref}')
 # PLOT GENERATION AND SAVING     
 
 # define plot title
-plot_title = f'survprob_frame{frame_start}to{frame_stop}_tau{taumax}_ref{ref}'
+plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref{ref}'
 
 #replace whitespaces with underscores and asterisks with
 plot_title = plot_title.replace(' ','_')
