@@ -20,11 +20,12 @@
 #       -taumax : number of frames to compute SP for
 #
 #
-#   Required installed python libraries: 
+#   Required installed python libraries (includes pre-installed libraries): 
 #       numpy
 #       matplotlib.pyplot
 #       itertools
 #       scipy
+#       scienceplots (optional: only added here to make more visually appealing plots)
 #       MDAnalysis
 #       os
 #       argparse
@@ -42,6 +43,7 @@ from scipy.optimize import curve_fit
 import argparse
 import itertools
 import os
+import scienceplots
 import sys
 import logging
 from cycler import cycler
@@ -188,8 +190,15 @@ with open("SP_results.txt", "w") as file:
 marker = itertools.cycle(('o', '+', 'x', '*'))
 colours = itertools.cycle(("red", "green", "blue", "orange"))
 
+plt.style.use(['notebook', 'grid'])
+
 # initialise plotting
 fig, ax = plt.subplots()
+
+# make nice plots
+plt.style.use = (['science','notebook','grid','no-latex'])
+# weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
+# I don't understand why, but it is what it is
 
 # calculation loop
 for i in sel:
@@ -267,7 +276,7 @@ for i in sel:
 
 # ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
 # plt.rc('axes', prop_cycle = default_cycler)
-plt.grid()
+# plt.grid()
 
 ax.set_xlabel('Time (ps)')
 ax.set_ylabel('SP')
@@ -283,5 +292,11 @@ plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref{ref}'
 #replace whitespaces with underscores and asterisks with
 plot_title = plot_title.replace(' ','_')
 
-#save figure
-plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+#save figure - multiple options for presentations, thesis, publications, etc
+plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
+plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
+
+ax.legend()
+plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
+plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
+
