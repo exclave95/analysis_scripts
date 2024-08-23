@@ -35,6 +35,7 @@ import matplotlib.pyplot as plt
 import MDAnalysis as mda
 from MDAnalysis.analysis import contacts
 import argparse
+import scienceplots
 import logging
 import warnings
 import sys
@@ -197,6 +198,8 @@ default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
                   cycler(linestyle=['-', '--', ':', '-.']))
 
 # %%
+plt.style.use(['science','notebook','grid','no-latex'])
+
 fig, ax = plt.subplots()
 
 
@@ -213,16 +216,9 @@ if test == 'average':
         #sns.lineplot(data = dataset_rollavg, label = f'{i}')
         plt.fill_between(dataset.index, dataset_rollavg - stdev * dataset_mstd, dataset_rollavg + stdev * dataset_mstd, alpha=0.4)
 
-    plt.grid()
-    plt.rc('axes', prop_cycle = default_cycler)
-    ax.set_xlabel('Frame')
-    ax.legend()
-    ax.set_ylabel('contacts')
-
     # num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
     # plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
     # plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
-    plt.savefig(f'{plot_title}.png', bbox_inches='tight') # save figure
 
 # option: rolling MEDIAN
 elif test == "median":
@@ -234,20 +230,20 @@ elif test == "median":
         #import seaborn as sns
         #sns.lineplot(data = dataset_rollavg, label = f'{i}')
 
-    plt.grid()
-    plt.rc('axes', prop_cycle = default_cycler)
-    ax.set_xlabel('Frame')
-    ax.legend()
-    ax.set_ylabel('contacts')
-
     # num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
     # plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
     # plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
-    plt.savefig(f'{plot_title}.png', bbox_inches='tight') # save figure
 
+plt.grid()
+plt.rc('axes', prop_cycle = default_cycler)
+ax.set_xlabel('Frame')
+# ax.legend()
+ax.set_ylabel('contacts')
 
-# %%
-# plt.figure()
-# plt.plot(contacts_only_df)
+#save figure - multiple options for presentations, thesis, publications, etc
+plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
+plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
 
-
+ax.legend()
+plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
+plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
