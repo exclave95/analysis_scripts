@@ -111,6 +111,12 @@ def contacts_within_cutoff(u, group_a, group_b, radius):
         # determine which distances <= radius
         n_contacts = contacts.contact_matrix(dist, radius).sum()
         timeseries.append([ts.frame, n_contacts])
+
+# Idea
+# t_ps = ts.frame * 2
+# t_ns = t_ps / 1000
+# timeseries.append([t_ns, n_contacts])
+
     return np.array(timeseries)
 
 # define reference. this doesn't change
