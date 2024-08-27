@@ -240,7 +240,7 @@ elif test == "median":
     # plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
     # plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 
-plt.grid()
+# plt.grid() redundant since i specified 'grid' in the matplotlib.style.use function call
 plt.rc('axes', prop_cycle = default_cycler)
 ax.set_xlabel('Frame')
 # ax.legend()
