@@ -105,7 +105,6 @@ u = mda.Universe(topol, traj)
 # %%
 # create analyser
 def contacts_within_cutoff(u, group_a, group_b, radius):
-    global results_timeseries
     results_timeseries = []
     for ts in u.trajectory[frame_start:frame_stop]: # these values are FRAMES, not TIMES
         # calculate distances between group_a and group_b
@@ -118,7 +117,7 @@ def contacts_within_cutoff(u, group_a, group_b, radius):
         t_ps = ts.frame * 2
         t_ns = t_ps / 1000
         results_timeseries.append([t_ns, n_contacts])
-
+	#time_timeseries = results_timeseries[0]
     return np.array(results_timeseries)
 
 # define reference. this doesn't change
@@ -130,19 +129,20 @@ fig, ax = plt.subplots()
 
 colours = itertools.cycle(("red", "green", "blue", "orange"))
 
-
-for i in range(len(sel)):
-    group_b = u.select_atoms(f'{sel[i]}')
-
+for i in sel:
+    group_b = u.select_atoms(f'{i}')
     #run the analysis
     run = contacts_within_cutoff(u, group_a, group_b, radius) 
     run = np.transpose(run)
     # append contacts array to previously defined time array
    # results = np.vstack((results, run[1]))
     # rinse and repeat
+    
 
+    print(run)
+    print(np.shape(run))
     time_timeseries = run[0]
-    contacts_timeseries = run[i+1]
+    contacts_timeseries = run[1]
     
     
     print('time', time_timeseries)
@@ -157,12 +157,129 @@ for i in range(len(sel)):
     dataset_rollmedian_array = dataset_rollmedian_df.to_numpy()
 
     colour = next(colours)
-    plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{sel[i]}')
+    plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{i}')
 
-    np.savetxt(f'{sel[i]}.csv', contacts_timeseries, delimiter = ',')
+    np.savetxt(f'{i}.csv', contacts_timeseries, delimiter = ',')
+   
+# # NEW VERSION
+# # create separate array for frames only
+# frames = []
+# for ts in u.trajectory[frame_start:frame_stop]:
+#     frames.append([ts.frame])
+# #convert to array
+# results = np.array(frames)
+# #convert to ns
+# results = np.transpose(results / 500)
+
+# # %%
+# # iterate over selections
+# for i in sel:
+    
+#     # define selection for an iteration
+#     group_b = u.select_atoms(f'{i}')
+#     #group_b_array = np.array(group_b)
+    
+#     # define radius depending on the ref/sel pair
+#     #### for future version of this code - consider creating a separate file where these distances are defined and just "importing it" here as the code runs ####
+#     # if a radius was specified (i.e. a uniform sphere), do nothing
+#     if radius:
+#         pass
+#     # otherwise, use the following definitions
+#     else:
+#         if ref == 'type Uo1' or ref == 'name Uo1':
+#             if i == 'name OW*':
+#                 radius = 2.46
+#             elif i == 'type OG2D2':
+#                 radius = 2.34
+#             elif i == 'name Oc*':
+#                 radius = 2.38
+#             elif i == 'name OB*':
+#                 radius = 2.46
+#         elif ref == 'type No1' or ref == 'name No1':
+#             if i == 'name OW*':
+#                 radius = 2.54
+#             elif i == 'type OG2D2':
+#                 radius = 2.42
+#             elif i == 'name Oc*':
+#                 radius = 2.46
+#             elif i == 'name OB*':
+#                 radius = 2.46
+        
+#     #run the analysis
+#     run = contacts_within_cutoff(u, group_a, group_b, radius) 
+#     run = np.transpose(run)
+#     # append contacts array to previously defined time array
+#     results = np.vstack((results, run[1]))
+#     # rinse and repeat
+
+# # process the data and plot it
+
+# # transpose results array
+# transposed_results = np.transpose(results)
+# # print(transposed_results)
+
+# # %%
+# transposed_results_df = pd.DataFrame(transposed_results)
+# print(transposed_results_df)
+
+# # %%
+# contacts_labels = ['Time (ns)']
+# contacts_labels.extend(sel)
+
+# transposed_results_df.columns = contacts_labels
+# transposed_results_df.iloc[:,0]
+
+# if csv == 'yes':
+#     transposed_results_df.to_csv(f"{plot_title}.csv")
+
+# # %%
+# # print(transposed_results_df.iloc[0:,0:1])
+
+# # contacts_only_df = transposed_results_df.iloc[:, 1:]
+# # contacts_only_df
+
+# ### LINESTYLE CYCLER ###
+# default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
+#                   cycler(linestyle=['-', '--', ':', '-.']))
+
+# # %%
+# plt.style.use(['science','notebook','grid','no-latex'])
+
+# fig, ax = plt.subplots()
+
+
+# #%% analysis 
+# # option: rolling AVERAGE
+# if test == 'average':
+#     for i in sel:
+#         dataset = transposed_results_df[i]
+#         dataset_rollavg = dataset.rolling(aw).mean()
+#         dataset_mstd = dataset.rolling(aw).std()
+#         dataset_rollavg.plot()
+#         #### alt plotting method
+#         #import seaborn as sns
+#         #sns.lineplot(data = dataset_rollavg, label = f'{i}')
+#         plt.fill_between(dataset.index, dataset_rollavg - stdev * dataset_mstd, dataset_rollavg + stdev * dataset_mstd, alpha=0.4)
+
+#     # num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
+#     # plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
+#     # plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
+
+# # option: rolling MEDIAN
+# elif test == "median":
+#     for i in sel:
+#         dataset = transposed_results_df[i]
+#         dataset_rollmedian = dataset.rolling(aw).median()
+        
+        
+        
+#         # dataset_rollmedian.plot()
+#         #### alt plotting method
+#         #import seaborn as sns
+#         #sns.lineplot(data = dataset_rollavg, label = f'{i}')
 
 num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
-plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{stdev}stdev_{aw}aw'
+plot_title = f'contacts_ref_{ref}_{frame_start}to{frame_stop}_{aw}aw'
 plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 
 # # plt.grid() redundant since i specified 'grid' in the matplotlib.style.use function call
