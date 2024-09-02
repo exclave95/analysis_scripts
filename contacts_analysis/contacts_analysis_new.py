@@ -245,6 +245,7 @@ plt.rc('axes', prop_cycle = default_cycler)
 ax.set_xlabel('Frame')
 # ax.legend()
 ax.set_ylabel('contacts')
+ax.set_ylim(-1, 33)
 
 #save figure - multiple options for presentations, thesis, publications, etc
 plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
