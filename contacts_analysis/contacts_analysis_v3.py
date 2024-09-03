@@ -15,7 +15,7 @@
 #       -sel : selection of species, in quotation marks, comma separated selections (e.g. "resname SOL, resname Na")
 #       -start : first trajectory frame to analyse
 #       -stop : final trajectory frame to analyse (default -1, i.e. last frame)
-#
+# 
 #  PREREQUISITES
 #  Installed python libraries: 
 #       numpy
@@ -55,11 +55,11 @@ parser.add_argument('-sel', help='selection species. NOTE: string needs to be in
 # parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
-parser.add_argument('-stdev', default = 1, help='number of stdevs to plot for uncertainty')
+parser.add_argument('-stdev', default = 0, help='number of stdevs to plot for uncertainty')
 parser.add_argument('-radius', help='pick uniform radius for all selections')
 parser.add_argument('-aw', default = 100, help="averaging window for plotting. default 100")
 parser.add_argument('-csv', default = 'yes', choices=['yes','no'], help="save results to csv? default yes")
-parser.add_argument('-test', choices=['median','average'], help="save results to csv? default yes")
+parser.add_argument('-m', default = 'median', choices=['median','average'], help="dataset manipulation")
 
 args = vars(parser.parse_args())
 
@@ -76,7 +76,7 @@ stdev = int(args['stdev'])
 radius = float(args['radius'])
 aw = int(args['aw'])
 csv = args['csv']
-test = args['test']
+m = args['m']
 
 # logging 
 logname = "contacts_analysis.log"
@@ -91,11 +91,11 @@ logger.info(" ".join(sys.argv))
 logger.info("")
 
 # plot title for later
-num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
+# num_sel = len(sel) #for filename - since can't add a list to a filename, instead we will just indicate the number of selections in the filename
 if radius:
-    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{test}_{stdev}stdev_{aw}aw_{radius}A'
-else:
-    plot_title = f'contacts_ref_{ref}_{num_sel}sel_{frame_start}to{frame_stop}_{test}_{stdev}stdev_{aw}aw_indivradii'
+    plot_title = f'contacts_ref_{ref}_{frame_start}to{frame_stop}_{m}_{aw}aw_{radius}A'
+# else:
+#     plot_title = f'contacts_ref_{ref}_{frame_start}to{frame_stop}_{test}_{aw}aw_indivradii'
 plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 
 
@@ -123,12 +123,12 @@ def contacts_within_cutoff(u, group_a, group_b, radius):
 # define reference. this doesn't change
 group_a = u.select_atoms(f'{ref}')
 
-# initialise plotting
+# initialise plotting and set plot styles
 plt.style.use(['science','notebook','grid','no-latex'])
 fig, ax = plt.subplots()
-
+# colour iterator for looped plotting
 colours = itertools.cycle(("red", "green", "blue", "orange"))
-
+#plotting and median/mean loop
 for i in sel:
     group_b = u.select_atoms(f'{i}')
     #run the analysis
@@ -141,34 +141,49 @@ for i in sel:
     #print(run)
     #print(np.shape(run))
     time_timeseries = run[0]
-    contacts_timeseries = run[1]
-    
-    
+    contacts_timeseries = run[1]    
+
     # print('time', time_timeseries)
     # print('contacts', contacts_timeseries)
+    if m == "median":
+        ######### calculate rolling median
+        # first convert to df
+        contacts_df = pd.DataFrame(contacts_timeseries)
+        # rolling median df
+        dataset_rollmedian_df = contacts_df.rolling(aw).median()
+        # convert back to numpy array
+        dataset_rollmedian_array = dataset_rollmedian_df.to_numpy()
+
+        colour = next(colours)
+        plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{i}')
+
+    else:
+        ######### calculate rolling average
+        # first convert to df
+        contacts_df = pd.DataFrame(contacts_timeseries)
+        # rolling average df
+        dataset_rollaverage_df = contacts_df.rolling(aw).mean()
+        # convert back to numpy array
+        dataset_rollaverage_array = dataset_rollaverage_df.to_numpy()
+
+        colour = next(colours)
+        plt.plot(time_timeseries, dataset_rollaverage_array, c=colour, label = f'{i}')
     
-    ######### calculate rolling median
-    # first convert to df
-    contacts_df = pd.DataFrame(contacts_timeseries)
-    # rolling median df
-    dataset_rollmedian_df = contacts_df.rolling(aw).median()
-    # convert back to numpy array
-    dataset_rollmedian_array = dataset_rollmedian_df.to_numpy()
-
-    colour = next(colours)
-    plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{i}')
-
-    np.savetxt(f'{i}.csv', contacts_timeseries, delimiter = ',')
+    # csv file - replace whitespaces and asterisks for better filenaming practice
+    csv_filename = f'{i}'
+    csv_filename = csv_filename.replace(' ','_')
+    csv_filename = csv_filename.replace('*','all')
+    np.savetxt(f'{csv_filename}.csv', contacts_timeseries, delimiter = ',')
    
 
-plot_title = f'contacts_ref_{ref}_{frame_start}to{frame_stop}_{aw}aw'
+plot_title = f'contacts_ref_{ref}_{frame_start}to{frame_stop}_{m}_{aw}aw'
 plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 
 # # plt.grid() redundant since i specified 'grid' in the matplotlib.style.use function call
 # plt.rc('axes', prop_cycle = default_cycler)
 ax.set_xlabel('Time (ns)')
 # ax.legend()
-ax.set_ylabel('contacts')
+ax.set_ylabel(f'{m} no. of contacts')
 ax.set_ylim(-1, 33)
 
 #save figure - multiple options for presentations, thesis, publications, etc
