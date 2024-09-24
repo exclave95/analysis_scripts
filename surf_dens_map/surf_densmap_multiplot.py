@@ -272,11 +272,11 @@ def analysis():
         ax.legend(loc='upper left')
         
         # axis labels
-        ax.set_xlabel('x (Å)', fontsize=10)
-        ax.set_ylabel('y (Å)', fontsize=10)
+        ax.set_xlabel(r'x ($\AA$)', fontsize=10)
+        ax.set_ylabel(r'y ($\AA$)', fontsize=10)
         
         # axis titles
-        ax.set_title(f'{i} {z0}-{z0+dz} Å')
+        ax.set_title(rf'{i} {z0}-{z0+dz} ($\AA$)')
         
         # set axis limits
         ax.set_xlim(minX, maxX)
