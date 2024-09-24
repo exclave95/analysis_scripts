@@ -46,6 +46,7 @@ import sys
 import logging
 from time import time
 import matplotlib.colors as mplcolors
+import scienceplots
 # scipy.stats as st imported later in code
 
 # parse user input arguments
@@ -234,6 +235,9 @@ def analysis():
 
         #### PLOTTING ####
 
+        plt.style.use(['science','notebook','grid','no-latex'])
+
+
         # if plot_type == 'heatmap':
         fig, ax = plt.subplots(figsize = (5,5), dpi=200)
 #            norm = mpl.colors.Normalize(vmin=0, vmax=10)
@@ -272,7 +276,7 @@ def analysis():
         ax.set_ylabel('y (Å)', fontsize=10)
         
         # axis titles
-        ax.set_title(f'{i} {z0}-{dz} Å')
+        ax.set_title(f'{i} {z0}-{z0+dz} Å')
         
         # set axis limits
         ax.set_xlim(minX, maxX)
@@ -280,7 +284,7 @@ def analysis():
 
         # SAVING     
         # define plot title
-        plot_title = f'{i}_SDM_z{z0}to{dz}_frame{frame_start}to{frame_stop}_{plot_type}_top'
+        plot_title = f'{i}_SDM_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_top'
         #replace whitespaces with underscores
         plot_title = plot_title.replace(' ','_')
         #save figure
