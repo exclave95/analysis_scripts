@@ -46,6 +46,7 @@ import sys
 import logging
 from time import time
 import matplotlib.colors as mplcolors
+import itertools
 import scienceplots
 # scipy.stats as st imported later in code
 
@@ -62,6 +63,7 @@ parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-plot', choices=['contour','contourf','heatmap','scatter'], default='contour', help='type of plot to generate. Options: heatmap (default), scatter')
 parser.add_argument('-side', choices=['top','bottom'], default='top', help='which exposed clay layer to use for analysis. default: top, i.e. the face with the highest z coordinates')
 parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
+parser.add_argument('-multi', choices=['yes','no'], default = 'yes', help='Multiple selections on one plot. Default yes, otherwise separate plots for each species')
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
@@ -76,7 +78,13 @@ frame_stop = int(args['stop'])
 plot_type = args['plot']
 side = args['side']
 csv = args['csv']
+multi = args['multi']
 
+# specify colour of actinyl
+if "resname UO2" in sel:
+    ano2_colour = 'm'
+elif "resname NPV" in sel:
+    ano2_colour = 'y'
 
 # logging 
 logname = "surfdensmap.log"
@@ -90,7 +98,6 @@ logger.setLevel(logging.INFO)
 logger.info(" ".join(sys.argv))
 logger.info("")
         
-
 def setup():
     # make them global so they can be accessed in isomorphous_substitutions() and analysis() functions
     global minX, maxX, minY, maxY, minZ, maxZ, clay_min_z, clay_max_z, u
@@ -186,7 +193,7 @@ def isomorphous_substitutions():
         print('Positions not being saved')  
 
 ##### ANALYSIS
-def analysis():
+def analysis_individual():
     for i in sel:
         # create updating/dynamic atom selection depending on chosen side
         if side == 'top':
@@ -290,11 +297,118 @@ def analysis():
         #save figure
         plt.savefig(f'{plot_title}.png', bbox_inches='tight')
 
+def analysis_combined():
+    #### PLOTTING ####
+
+    plt.style.use(['science','notebook','grid','no-latex'])
+
+    colours = itertools.cycle((ano2_colour, "red", "green", "blue", "orange"))
+    markers = itertools.cycle(('^','o', '+', 'x', '*'))
+
+
+    # if plot_type == 'heatmap':
+    fig, ax = plt.subplots(figsize = (5,5), dpi=200)
+#            norm = mpl.colors.Normalize(vmin=0, vmax=10)
+    for i in sel: 
+            
+                # create updating/dynamic atom selection depending on chosen side
+        if side == 'top':
+            start_z = clay_max_z + z0
+            end_z = start_z + dz
+            dynamic_sel = u.select_atoms(f'{i} and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
+        if side == 'bottom':
+            start_z = clay_min_z - z0
+            end_z = start_z - dz
+            dynamic_sel = u.select_atoms(f'{i} and (prop z <= {start_z} and 'f'prop z >= {end_z})', updating = True)
+
+        # create empty array to fill with coordinates
+        pos = np.empty((0,3))
+
+        # ANALYSIS PERFORMED HERE    
+        # iterate through trajectory between selected frames
+        for ts in u.trajectory[frame_start:frame_stop]:
+            dynamic_sel # run the dynamic selection defined earlier
+            pos_dyn = dynamic_sel.positions # record positions of atoms in selection at that frame
+                        
+            # for each atom (row) in pos_dyn, vertically stack atom positions
+            for j in pos_dyn: 
+                pos = np.vstack((pos, pos_dyn))
+            
+            # rinse and repeat
+            u.trajectory.next
+
+        ### FILTER THROUGH RECORDED COORDINATES ###
+        # select just the x and y coordinates
+        pos_xy = pos[0:,0:2]
+
+        # divide x and y into separate arrays
+        pos_all_x = np.transpose(pos_xy)[0]
+        pos_all_y = np.transpose(pos_xy)[1]
+
+        # SAVING TO CSV
+        if csv == 'yes':
+            print(f'Saving {i} xy coordinates into csv file')
+            # convert array into dataframe 
+            pos_xy_df = pd.DataFrame(pos_xy) 
+            
+            # save the dataframe as a csv file 
+            pos_xy_df.to_csv(f"{i}_xy_top.csv")
+        else:
+            print('Positions not being saved')        
+
+            
+        if plot_type == 'contourf':
+            print('Error: Plot type incompatible with combined plot')
+        elif plot_type =='contour':
+            xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
+            import scipy.stats as st
+            positions = np.vstack([xx.ravel(), yy.ravel()])
+            values = np.vstack([pos_all_x, pos_all_y])
+            kernel = st.gaussian_kde(values)
+            kernel.set_bandwidth(bw_method=0.05)
+            f = np.reshape(kernel(positions).T, xx.shape)
+            colour = next(colours)
+            plt.contour(xx, yy, f, zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60, colors = colour)
+        elif plot_type == 'scatter':
+            colour = next(colours)
+            marker = next(markers)
+            plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker=marker, linewidths=1, c = colour)
+        elif plot_type == 'heatmap':
+            print('Error: Plot type incompatible with combined plot')
+        # plt.colorbar()
+    plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='cyan', linewidths=4, zorder=4)
+    plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='salmon', linewidths=4, zorder=10)               
+
+    # axis legend
+    ax.legend(loc='upper left')
+    
+    # axis labels
+    ax.set_xlabel(r'x ($\AA$)', fontsize=10)
+    ax.set_ylabel(r'y ($\AA$)', fontsize=10)
+    
+    # axis titles
+    ax.set_title(rf'SDM {z0}-{z0+dz} ($\AA$)')
+    
+    # set axis limits
+    ax.set_xlim(minX, maxX)
+    ax.set_ylim(minY, maxY)
+
+    # SAVING     
+    # define plot title
+    plot_title = f'SDM_multisel_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_top'
+    #replace whitespaces with underscores
+    plot_title = plot_title.replace(' ','_')
+    #save figure
+    plt.savefig(f'{plot_title}.png', bbox_inches='tight')
+
 # run the code
 setup()
 isomorphous_substitutions()
-analysis()
 
+if multi == 'yes':
+    analysis_combined()
+else:
+    analysis_individual()
 
 #end_time = time.time()
 
@@ -302,3 +416,4 @@ analysis()
 # execution_time = end_time - start_time
 # with open('surfdensmap.log', 'a') as write_time:
 #     write_time.write(f'{execution_time}')
+# %%
