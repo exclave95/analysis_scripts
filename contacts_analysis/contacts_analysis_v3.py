@@ -121,6 +121,7 @@ def contacts_within_cutoff(u, group_a, group_b, radius):
 
 # define reference. this doesn't change
 group_a = u.select_atoms(f'{ref}')
+len_group_a = len(group_a.residues)
 
 # initialise plotting and set plot styles
 plt.style.use(['science','notebook','grid','no-latex'])
@@ -141,13 +142,14 @@ for i in sel:
     #print(np.shape(run))
     time_timeseries = run[0]
     contacts_timeseries = run[1]    
+    contacts_timeseries_per_molecule = contacts_timeseries/len_group_a
 
     # print('time', time_timeseries)
     # print('contacts', contacts_timeseries)
     if m == "median":
         ######### calculate rolling median
         # first convert to df
-        contacts_df = pd.DataFrame(contacts_timeseries)
+        contacts_df = pd.DataFrame(contacts_timeseries_per_molecule)
         # rolling median df
         dataset_rollmedian_df = contacts_df.rolling(aw).median()
         # convert back to numpy array
@@ -159,7 +161,7 @@ for i in sel:
     else:
         ######### calculate rolling average
         # first convert to df
-        contacts_df = pd.DataFrame(contacts_timeseries)
+        contacts_df = pd.DataFrame(contacts_timeseries_per_molecule)
         # rolling average df
         dataset_rollaverage_df = contacts_df.rolling(aw).mean()
         # convert back to numpy array
