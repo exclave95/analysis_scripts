@@ -4,6 +4,8 @@
 #              Written by Jakub LICKO, MChem       
 # Based on and adapted from the instructions in official MDAnalysis documentation: 
 # https://userguide.mdanalysis.org/stable/examples/analysis/distances_and_contacts/distances_between_atomgroups.html
+# 
+# RESULTS: effectively a Time-evolving Coordination Number - either instantaneous, or time-averaged/time-median
 #
 #  INSTRUCTIONS
 #  Example command line input:
@@ -193,7 +195,7 @@ if m == 'no':
     ax.set_ylabel('coordination number')
 else:
     ax.set_ylabel(f'{m} coordination number')
-    
+
 # ax.set_ylim(-0.5, 5.5)
 
 #save figure - multiple options for presentations, thesis, publications, etc
