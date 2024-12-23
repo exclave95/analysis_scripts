@@ -58,7 +58,7 @@ parser.add_argument('-stdev', default = 0, help='number of stdevs to plot for un
 parser.add_argument('-radius', help='pick uniform radius for all selections')
 parser.add_argument('-aw', default = 100, help="averaging window for plotting. default 100")
 parser.add_argument('-csv', default = 'yes', choices=['yes','no'], help="save results to csv? default yes")
-parser.add_argument('-m', default = 'median', choices=['median','average'], help="dataset manipulation")
+parser.add_argument('-m', default = 'no', choices=['median','mean','no'], help="dataset manipulation - Mean or Median?")
 
 args = vars(parser.parse_args())
 
@@ -158,7 +158,7 @@ for i in sel:
         colour = next(colours)
         plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{i}')
 
-    else:
+    elif m == 'mean':
         ######### calculate rolling average
         # first convert to df
         contacts_df = pd.DataFrame(contacts_timeseries_per_molecule)
@@ -169,6 +169,10 @@ for i in sel:
 
         colour = next(colours)
         plt.plot(time_timeseries, dataset_rollaverage_array, c=colour, label = f'{i}')
+    
+    elif m == 'no':
+        colour = next(colours)
+        plt.plot(time_timeseries, contacts_timeseries_per_molecule, c=colour, label = f'{i}')
     
     # csv file - replace whitespaces and asterisks for better filenaming practice
     csv_filename = f'{i}'
@@ -184,8 +188,13 @@ plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 # plt.rc('axes', prop_cycle = default_cycler)
 ax.set_xlabel('Time (ns)')
 # ax.legend()
-ax.set_ylabel(f'{m} coordination number')
-ax.set_ylim(-0.5, 5.5)
+
+if m == 'no':
+    ax.set_ylabel('coordination number')
+else:
+    ax.set_ylabel(f'{m} coordination number')
+    
+# ax.set_ylim(-0.5, 5.5)
 
 #save figure - multiple options for presentations, thesis, publications, etc
 plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
