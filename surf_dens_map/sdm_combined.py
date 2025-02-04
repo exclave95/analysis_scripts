@@ -3,6 +3,7 @@
 ##### SURFACE DENSITY MAP GENERATOR FOR MOLECULAR DYNAMICS SIMULATIONS ##### 
 #              Written by Jakub LICKO, MChem       
 #
+#
 #  INSTRUCTIONS
 #  Example command line input:
 #       python surf_dens.py -t trajout.xtc -s topol.tpr -z0 0 -dz 1.5 -sel "resname UO2, resname MAL" -start 45000 -stop -1 -plot heatmap 
