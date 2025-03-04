@@ -57,13 +57,14 @@ parser.add_argument('-s', default='topol.tpr', help='topology file')
 # parser.add_argument('-geom', help='geometry relative to reference to compute survival probability in. E.g. "sphzone 12.3" ')
 # parser.add_argument('-sel', help='species to sample. NOTE: string needs to be in quotation marks, separate selections with commas')
 parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
-parser.add_argument('-ano2', choices=['uo2', 'npo2'], help='which actinyl?')
+parser.add_argument('-dynamic', help='what is the dynamic group (will be treated together)? e.g. neptunium atoms adsorbed on clay')
+parser.add_argument('-static', help='what is the static group (will be treated separately)? e.g. the AT* sites on a clay surface')
 parser.add_argument('-radius', help='radius (or cut-off) to calculate SP for')
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save SP of ligands to csv files? Options: yes (default), no')
 parser.add_argument('-taumax', default=20, help='number of frames to compute SP for')
-parser.add_argument('-cfit', default='no', choices=['yes','no'], help='fit to exponential decay curve with specified c intercept?')
+parser.add_argument('-curvefit', default='k', choices=['k','ak','akc'], help='which exp curve to fit for? exp(-kx), a*exp(-kx), or a*exp(-kx)+c')
 
 # parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 args = vars(parser.parse_args())
@@ -73,7 +74,9 @@ args = vars(parser.parse_args())
 # sel = args['sel'].split(', ')
 traj = args['t']
 topol = args['s']
-ano2 = args['ano2']
+dynamic = args['dynamic']
+static = args['static']
+# ano2 = args['ano2']
 # geom = args['geom']
 ts = int(args['ts'])
 radius = int(args['radius'])
@@ -81,7 +84,7 @@ frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 taumax = int(args['taumax'])
 csv = args['csv']
-cfit = args['cfit']
+curvefit = args['curvefit']
 
 # logging 
 logname = "SP.log"
@@ -124,7 +127,7 @@ def surv_prob_curve_fit():
     # give parameters global scope (so the code can recognise them when the function is called)
     global popt, pcov, perr, a, k, c, x_fitted, y_fitted, cond_numb, time_constant
 
-    if cfit == 'no':
+    if curvefit == 'ak':
         # define optimization parameters and their covariance coefficients
         
         popt, pcov = curve_fit(lambda t, a, k: a * (np.exp(-k * t)), x, y)
@@ -134,10 +137,10 @@ def surv_prob_curve_fit():
         k = popt[1]
 
         # define fitted x and y
-        x_fitted = np.linspace(np.min(x), np.max(x), 100) #why 100?
-        y_fitted = a * np.exp(-k * x_fitted)   
+        # x_fitted = np.linspace(np.min(x), np.max(x), 100) #why 100?
+        y_fitted = a * np.exp(-k * x)   
 
-    elif cfit == 'yes':
+    elif curvefit == 'akc':
         # define optimization parameters and their covariance coefficients
         popt, pcov = curve_fit(lambda t, a, k, c: a * (np.exp(-k * t)) + c, x, y)
 
@@ -147,8 +150,19 @@ def surv_prob_curve_fit():
         c = popt[2]
 
         # define fitted x and y
-        x_fitted = np.linspace(np.min(x), np.max(x), 100) #again, why 100 again?
-        y_fitted = a * np.exp(-k * x_fitted) + c
+        # x_fitted = np.linspace(np.min(x), np.max(x), 100) #again, why 100 again?
+        y_fitted = a * np.exp(-k * x) + c
+
+    elif curvefit == 'k':
+        # define optimization parameters and their covariance coefficients
+        popt, pcov = curve_fit(lambda t, k: (np.exp(-k * t)), x, y)
+
+        # define a, k and c 
+        k = popt[0]
+
+        # define fitted x and y
+        # x_fitted = np.linspace(np.min(x), np.max(x), 100) #again, why 100 again?
+        y_fitted = np.exp(-k * x)
 
     # calculate the time constant (1 / k)
     time_constant = 1 / k 
@@ -179,10 +193,14 @@ with open("SP_results.txt", "w") as file:
     file.write(f"\nCalculated in directory: {cwd}")
     # file.write(f'\nReference: {ref}\nFull selection: ')
     file.write(f'\nGeometry: 4 A \nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
-    if cfit == "no":
+    if curvefit == "ak":
         file.write(f'\nCurve fit equation: y = a * exp(-k * x)')
-    else:
+    elif curvefit =='akc':
         file.write(f'\nCurve fit equation: y = a * exp(-k * x) + c')
+    elif curvefit =='k':
+        file.write(f'\nCurve fit equation: y = exp(-k * x)')
+
+
 
 #%%
 # MAIN CELL #
@@ -198,45 +216,47 @@ colours = itertools.cycle(("red", "green", "blue", "orange"))
 fig, ax = plt.subplots()
 
 # make nice plots
-plt.style.use = (['science','notebook','grid','no-latex'])
+plt.style.use(['science','notebook','grid','no-latex'])
 # weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
 # I don't understand why, but it is what it is
 
 #selection of actinide atoms and actinyl residues
-if ano2 == 'uo2':
-    an = 'name Uo1'
-    ano2_res = 'resname UO2'
-elif ano2 == 'npo2':
-    an = 'name No1'
-    ano2_res = 'resname NPV'
+# if ano2 == 'uo2':
+#     an = 'name Uo1'
+#     ano2_res = 'resname UO2'
+# elif ano2 == 'npo2':
+#     an = 'name No1'
+#     ano2_res = 'resname NPV'
 
-# substitution sites
-#dimensions of simulation box (Sanity check):
-box_dim = u.dimensions
-minX, maxX = 0, box_dim[0]
-minY, maxY = 0, box_dim[1]
-minZ, maxZ = 0, box_dim[2]
+if static == 'name AT*':
+    # substitution sites
+    #dimensions of simulation box (Sanity check):
+    box_dim = u.dimensions
+    minX, maxX = 0, box_dim[0]
+    minY, maxY = 0, box_dim[1]
+    minZ, maxZ = 0, box_dim[2]
 
-# select clay atoms
-clay = u.select_atoms('resname UC*')
+    # select clay atoms
+    clay = u.select_atoms('resname UC*')
 
-# create array containing clay positions, with x y and z being in separate rows
-# i.e. transform FROM N atoms with 3 coordinates TO 3 coordinate sets with N entries each
-clay_positions = np.transpose(clay.positions)
+    # create array containing clay positions, with x y and z being in separate rows
+    # i.e. transform FROM N atoms with 3 coordinates TO 3 coordinate sets with N entries each
+    clay_positions = np.transpose(clay.positions)
 
-# identify max and min z coordinates of all clay atoms (only max is needed for SDM generation)
-clay_min_z = np.min(clay_positions[2])
-clay_max_z = np.max(clay_positions[2])
+    # identify max and min z coordinates of all clay atoms (only max is needed for SDM generation)
+    clay_min_z = np.min(clay_positions[2])
+    clay_max_z = np.max(clay_positions[2])
 
-# AT to study
-top_layer = clay_max_z - 2    
-top_at = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {top_layer})')
-bottom_layer = clay_min_z + 2    
-bottom_at = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {bottom_layer})')
-surface_at = top_at + bottom_at
+    # AT to study
+    top_layer = clay_max_z - 2    
+    top_at = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {top_layer})')
+    bottom_layer = clay_min_z + 2    
+    bottom_at = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {bottom_layer})')
+
+    static_selection = top_at + bottom_at    
 
 # all_at = u.select_atoms('name AT*')
-num_of_AT = len(surface_at) #should = 12. use this also for SEM calculation, if necessary
+# num_of_AT = len(surface_at) #should = 12. use this also for SEM calculation, if necessary
 
 
 #DIRECTLY FROM DOCUMENTATION - added by Lorenz lab group
@@ -245,9 +265,9 @@ num_of_AT = len(surface_at) #should = 12. use this also for SEM calculation, if 
 # joined_sp_timeseries = [[] for _ in range(num_of_AT)]
 
 # calculation loop
-for at_resid in surface_at.resids:
+for static_sel_resid in static_selection.resids:
     # select reference and selection pair and calculate SP for it
-    select = f"{an} and around {radius} (resid {at_resid} and name AT*)" # I wasn't able to find a different way to select for those AT 
+    select = f"{dynamic} and around {radius} (resid {static_sel_resid} and {static})" # I wasn't able to find a different way to select for those AT 
     sp = SP(u, select, verbose=True)
     sp.run(start=frame_start, stop=frame_stop, tau_max=taumax)
     tau_timeseries = sp.tau_timeseries
@@ -293,13 +313,13 @@ for at_resid in surface_at.resids:
 
 # MODIFICATION 2 - saving to CSV file 
 if csv == 'yes':
-    print(f'Saving {an} values into csv file')
+    print(f'Saving {dynamic} values into csv file')
     # surv_prob_data = time_timeseries, sp_mean
     # surv_prob_data = time_timeseries_tolist, sp_mean
     # surv_prob_data = np.transpose(sp_mean)
     
     # define filename, replace whitespaces with underscores and asterisks with 'all' 
-    csv_filename = f'{an}_surv_prob'
+    csv_filename = f'{dynamic}_surv_prob'
     csv_filename = csv_filename.replace(' ','_')
     csv_filename = csv_filename.replace('*','all')
 
@@ -344,7 +364,7 @@ with open('SP_results.txt', 'a') as file:
 # plotting
 # plt.scatter(time_timeseries, sp_mean, c=colour, marker=plot_marker)
 plt.scatter(time_timeseries, sp_timeseries, c=colour, marker=plot_marker )
-plt.plot(x_fitted, y_fitted, c=colour)
+plt.plot(x, y_fitted, c=colour)
 
 # ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
 # plt.rc('axes', prop_cycle = default_cycler)
