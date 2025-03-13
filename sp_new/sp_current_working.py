@@ -198,7 +198,7 @@ with open("SP_results.txt", "w") as file:
     file.write('\n#########################')
     file.write(f"\nCalculated in directory: {cwd}")
     # file.write(f'\nReference: {ref}\nFull selection: ')
-    file.write(f'\nDynamic: {dynamic}\nStatic: {static}\n Geometry: around {radius} A\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
+    file.write(f'\nDynamic: {dynamic}\nStatic: {static}\nGeometry: around {radius} Ångstrom(s)\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
     if curvefit == "ak":
         file.write(f'\nCurve fit equation: y = a * exp(-k * x)')
     elif curvefit =='akc':
