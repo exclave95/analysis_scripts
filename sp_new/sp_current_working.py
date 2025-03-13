@@ -194,11 +194,11 @@ def surv_prob_curve_fit():
 #########################
 
 with open("SP_results.txt", "w") as file:
-    file.write('Survival Probability Results')
+    file.write('Survival Probability Curve-Fitting Results')
     file.write('\n#########################')
     file.write(f"\nCalculated in directory: {cwd}")
     # file.write(f'\nReference: {ref}\nFull selection: ')
-    file.write(f'\nGeometry: {radius} A \nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
+    file.write(f'\nDynamic: {dynamic}\nStatic: {static}\n Geometry: around {radius} A\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
     if curvefit == "ak":
         file.write(f'\nCurve fit equation: y = a * exp(-k * x)')
     elif curvefit =='akc':
@@ -215,15 +215,15 @@ with open("SP_results.txt", "w") as file:
                 #   cycler(linestyle=['-', '--', ':', '-.']))
 
 # define scatter plot colours and markers
-marker = itertools.cycle(('o', '+', 'x', '*'))
-colours = itertools.cycle(("red", "green", "blue", "orange"))
+# marker = itertools.cycle(('o', '+', 'x', '*'))
+# colours = itertools.cycle(("red", "green", "blue", "orange"))
 
 # initialise plotting
-fig, ax = plt.subplots()
+# fig, ax = plt.subplots()
 
-# make nice plots
-plt.style.use(['science','notebook','grid','no-latex'])
-# weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
+# # make nice plots
+# plt.style.use(['science','notebook','grid','no-latex'])
+# # weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
 # I don't understand why, but it is what it is
 
 #selection of actinide atoms and actinyl residues
@@ -270,6 +270,7 @@ if static == 'name AT*':
 # so my averaging and data storage is different, but somewhat inspired by them
 # joined_sp_timeseries = [[] for _ in range(num_of_AT)]
 
+# counter for numbering files and looping
 counter = 1
 
 # calculation loop
@@ -315,7 +316,7 @@ for static_sel_resid in static_selection.resids:
         csv_filename = csv_filename.replace('*','all')
 
         # save as a csv file 
-        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of sel {dynamic}, {radius} of ref {static}, {counter}\n{cwd}')  
+        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of sel {dynamic}, {radius} of ref {static}, count {counter}\n{cwd}')  
         # with open('sp_data.txt', 'w') as file:
         #     file.write()
     else:
@@ -342,14 +343,14 @@ for static_sel_resid in static_selection.resids:
         with open('SP_results.txt', 'a') as file:
             file.write('\n--------------------')
             # file.write(f'\nCurve fit parameters for {dynamic} ({colour} {plot_marker})') # legacy code that included plotting
-            file.write(f'\nCurve fit parameters for {dynamic} {counter})')
+            file.write(f'\nCurve fit parameters for {dynamic}, count {counter})')
 
             # write curve fit parameters
             if curvefit == 'k': # record STDEV of c if it was calculated
                 file.write(f'\nk = {k}')
-            if curvefit == 'ak': # record STDEV of c if it was calculated
+            elif curvefit == 'ak': # record STDEV of c if it was calculated
                 file.write(f'\na = {a}\nk = {k}')
-            if curvefit == 'akc': # record STDEV of c if it was calculated
+            elif curvefit == 'akc': # record STDEV of c if it was calculated
                 file.write(f'\na = {a}\nk = {k}\nc = {c}')
 
             # write time constant
