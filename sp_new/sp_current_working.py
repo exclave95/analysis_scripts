@@ -342,8 +342,10 @@ for static_sel_resid in static_selection.resids:
         ##############################
         with open('SP_results.txt', 'a') as file:
             file.write('\n--------------------')
+            file.write(f'\n{counter}, corresponds to {csv_filename}')
+
             # file.write(f'\nCurve fit parameters for {dynamic} ({colour} {plot_marker})') # legacy code that included plotting
-            file.write(f'\nCurve fit parameters for {dynamic}, count {counter})')
+            file.write(f'\nCurve fit parameters for {dynamic}, static resid: {static_sel_resid})')
 
             # write curve fit parameters
             if curvefit == 'k': # record STDEV of c if it was calculated
