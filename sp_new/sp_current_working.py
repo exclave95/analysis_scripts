@@ -325,49 +325,52 @@ for static_sel_resid in static_selection.resids:
     ###################################
     ######### FIT TO CURVE ############
     ###################################
-
-    # MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
-    # the function was defined earlier in the code for clarity, and is simply called here
-    surv_prob_curve_fit()
-
-    # plotting colour and markers, added to results file as legend
-    # colour = next(colours) #ensures same colour for both points and curve
-    # plot_marker = next(marker)
-
-    ##############################
-    # Write results to txt file #
-    ##############################
-    with open('SP_results.txt', 'a') as file:
-        file.write('\n--------------------')
-        # file.write(f'\nCurve fit parameters for {dynamic} ({colour} {plot_marker})') # legacy code that included plotting
-        file.write(f'\nCurve fit parameters for {dynamic} {counter})')
-
-        # write curve fit parameters
-        if curvefit == 'k': # record STDEV of c if it was calculated
-            file.write(f'\nk = {k}')
-        if curvefit == 'ak': # record STDEV of c if it was calculated
-            file.write(f'\na = {a}\nk = {k}')
-        if curvefit == 'akc': # record STDEV of c if it was calculated
-            file.write(f'\na = {a}\nk = {k}\nc = {c}')
-
-        # write time constant
-        file.write(f'\n\nTime constant (1/k) = {time_constant}')
-
-        # write curve fit parameter error values
-        file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
-        if curvefit == 'k': # record STDEV of c if it was calculated
-            file.write(f'\nk STDEV = {perr[0]}')
-        elif curvefit =='ak':
-            file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
-        elif curvefit =='akc':
-            file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}\nc STDEV = {perr[2]}')
     
-        # write covariance matrix   
-        file.write(f'\n\nCovariance matrix:')
-        file.write(f'\n{pcov}')
-        file.write(f'\n\nCovariance matrix condition number (overfitting check)')
-        file.write(f'\n{cond_numb}\n')
-    
+    #need a try statement here because in some cases (if full of 0s or 1s etc), the curve-fitting function won't work and will give an error
+    try:
+        # MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
+        # the function was defined earlier in the code for clarity, and is simply called here
+        surv_prob_curve_fit()
+
+        # plotting colour and markers, added to results file as legend
+        # colour = next(colours) #ensures same colour for both points and curve
+        # plot_marker = next(marker)
+
+        ##############################
+        # Write results to txt file #
+        ##############################
+        with open('SP_results.txt', 'a') as file:
+            file.write('\n--------------------')
+            # file.write(f'\nCurve fit parameters for {dynamic} ({colour} {plot_marker})') # legacy code that included plotting
+            file.write(f'\nCurve fit parameters for {dynamic} {counter})')
+
+            # write curve fit parameters
+            if curvefit == 'k': # record STDEV of c if it was calculated
+                file.write(f'\nk = {k}')
+            if curvefit == 'ak': # record STDEV of c if it was calculated
+                file.write(f'\na = {a}\nk = {k}')
+            if curvefit == 'akc': # record STDEV of c if it was calculated
+                file.write(f'\na = {a}\nk = {k}\nc = {c}')
+
+            # write time constant
+            file.write(f'\n\nTime constant (1/k) = {time_constant}')
+
+            # write curve fit parameter error values
+            file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
+            if curvefit == 'k': # record STDEV of c if it was calculated
+                file.write(f'\nk STDEV = {perr[0]}')
+            elif curvefit =='ak':
+                file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
+            elif curvefit =='akc':
+                file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}\nc STDEV = {perr[2]}')
+        
+            # write covariance matrix   
+            file.write(f'\n\nCovariance matrix:')
+            file.write(f'\n{pcov}')
+            file.write(f'\n\nCovariance matrix condition number (overfitting check)')
+            file.write(f'\n{cond_numb}\n')
+    except:
+        pass
     counter += 1
     # END OF MODIFICATION 3
 
