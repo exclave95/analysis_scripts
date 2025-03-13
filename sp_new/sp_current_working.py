@@ -261,7 +261,7 @@ if static == 'name AT*':
 
     static_selection = top_at + bottom_at    
 else:
-    static_selection = static
+    static_selection = u.select_atoms(f'{static}')
 
 # all_at = u.select_atoms('name AT*')
 # num_of_AT = len(surface_at) #should = 12. use this also for SEM calculation, if necessary
