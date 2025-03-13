@@ -260,6 +260,8 @@ if static == 'name AT*':
     bottom_at = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {bottom_layer})')
 
     static_selection = top_at + bottom_at    
+else:
+    static_selection = static
 
 # all_at = u.select_atoms('name AT*')
 # num_of_AT = len(surface_at) #should = 12. use this also for SEM calculation, if necessary
@@ -421,3 +423,5 @@ for static_sel_resid in static_selection.resids:
 #     if nan = False:
 #         plot(time, SP)
 #         curve_fit    
+
+# %%
