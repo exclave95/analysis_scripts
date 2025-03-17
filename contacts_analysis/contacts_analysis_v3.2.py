@@ -27,6 +27,7 @@
 #       argparse
 #       sys
 #       logging
+#       scienceplots - optional but produces pretty latex plots
 
 # %%
 import numpy as np
@@ -50,7 +51,6 @@ warnings.filterwarnings('ignore')
 parser = argparse.ArgumentParser(description="Specify analysis parameters")
 parser.add_argument('-t', help='trajectory file')
 parser.add_argument('-s', default='topol.tpr', help='topology file')
-# parser.add_argument('-r', help='size of sampling radius to define a contact') - commented since I define my radii in the code itself
 parser.add_argument('-ref', help='reference species')
 parser.add_argument('-sel', help='selection species. NOTE: string needs to be in quotation marks, separate selections with comma + space, e.g. resname A, resname B')
 # parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
@@ -58,7 +58,7 @@ parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-stdev', default = 0, help='number of stdevs to plot for uncertainty')
 parser.add_argument('-radius', help='pick uniform radius for all selections')
-parser.add_argument('-aw', default = 100, help="averaging window for plotting. default 100")
+parser.add_argument('-aw', default = 100, help="number of frames to use for 'averaging' window (doesn't apply just to average, also for median). default 100")
 parser.add_argument('-csv', default = 'yes', choices=['yes','no'], help="save results to csv? default yes")
 parser.add_argument('-m', default = 'no', choices=['median','mean','no'], help="dataset manipulation - Mean or Median?")
 
@@ -115,8 +115,8 @@ def contacts_within_cutoff(u, group_a, group_b, radius):
         # timeseries.append([ts.frame, n_contacts])
 
         # Create ns timeseries
-        t_ps = ts.frame * 2
-        t_ns = t_ps / 1000
+        t_ps = ts.frame * 2 # convert from frames to picoseconds (since timestep is 2 ps)
+        t_ns = t_ps / 1000 # convert from picoseconds to nanoseconds
         results_timeseries.append([t_ns, n_contacts])
 	#time_timeseries = results_timeseries[0]
     return np.array(results_timeseries)
