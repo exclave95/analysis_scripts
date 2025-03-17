@@ -128,8 +128,11 @@ len_group_a = len(group_a.residues)
 # initialise plotting and set plot styles
 plt.style.use(['science','notebook','grid','no-latex'])
 fig, ax = plt.subplots()
+
 # colour iterator for looped plotting
-colours = itertools.cycle(("red", "green", "blue", "orange"))
+colours = itertools.cycle(("red", "green", "blue", "gray", "pink"))
+linestyles = itertools.cycle(("dashed", "-.", "solid", "solid","solid"))
+
 #plotting and median/mean loop
 for i in sel:
     group_b = u.select_atoms(f'{i}')
@@ -158,7 +161,9 @@ for i in sel:
         dataset_rollmedian_array = dataset_rollmedian_df.to_numpy()
 
         colour = next(colours)
-        plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{i}')
+        linestyle = next(linestyles)
+        plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{i}', linestyle=linestyle)
+        plt.ylim(-0.1, 5.1)
 
     elif m == 'mean':
         ######### calculate rolling average
@@ -170,16 +175,19 @@ for i in sel:
         dataset_rollaverage_array = dataset_rollaverage_df.to_numpy()
 
         colour = next(colours)
-        plt.plot(time_timeseries, dataset_rollaverage_array, c=colour, label = f'{i}')
+        linestyle = next(linestyles)
+        plt.plot(time_timeseries, dataset_rollaverage_array, c=colour, label = f'{i}', linestyle = linestyle)
     
     elif m == 'no':
         colour = next(colours)
-        plt.plot(time_timeseries, contacts_timeseries_per_molecule, c=colour, label = f'{i}')
+        linestyle = next(linestyles)
+        plt.plot(time_timeseries, contacts_timeseries_per_molecule, c=colour, label = f'{i}', linestyle = linestyle)
     
     # csv file - replace whitespaces and asterisks for better filenaming practice
     csv_filename = f'{i}'
     csv_filename = csv_filename.replace(' ','_')
     csv_filename = csv_filename.replace('*','all')
+    csv_filename = csv_filename.replace('OB[!TS]', 'OB')
     np.savetxt(f'{csv_filename}.csv', contacts_timeseries, delimiter = ',')
    
 
@@ -190,6 +198,7 @@ plot_title = plot_title.replace(' ','_') # replace whitespaces with underscores
 # plt.rc('axes', prop_cycle = default_cycler)
 ax.set_xlabel('Time (ns)')
 # ax.legend()
+
 
 if m == 'no':
     ax.set_ylabel('coordination number')
@@ -202,6 +211,6 @@ else:
 plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
 plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
 
-ax.legend()
+plt.legend(fancybox=False, edgecolor='k', shadow=True)
 plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
 plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
