@@ -229,11 +229,13 @@ with open("SP_results.txt", "w") as file:
 # marker = itertools.cycle(('o', '+', 'x', '*'))
 # colours = itertools.cycle(("red", "green", "blue", "orange"))
 
-# initialise plotting
-fig, ax = plt.subplots()
 
 # # make nice plots
 plt.style.use(['science','notebook','grid','no-latex'])
+# initialise plotting
+fig, ax = plt.subplots()
+
+
 # # weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
 # I don't understand why, but it is what it is
 ###############################################
@@ -338,13 +340,15 @@ for static_sel_resid in static_selection.resids:
     
     #need a try statement here because in some cases (if full of 0s or 1s etc), the curve-fitting function won't work and will give an error
     try:
+        
+        color = next(ax._get_lines.prop_cycler)['color']
         # plot if possible #
-        plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}')
+        plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}', color=color, s=10)
         # MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
         # the function was defined earlier in the code for clarity, and is simply called here
         surv_prob_curve_fit()
 
-        plt.plot(time_timeseries, y_fitted)
+        plt.plot(time_timeseries, y_fitted, color=color, linewidth=0.5)
         # plotting colour and markers, added to results file as legend
         # colour = next(colours) #ensures same colour for both points and curve
         # plot_marker = next(marker)
@@ -357,7 +361,7 @@ for static_sel_resid in static_selection.resids:
             file.write(f'\n{counter}, corresponds to {csv_filename}')
 
             # file.write(f'\nCurve fit parameters for {dynamic} ({colour} {plot_marker})') # legacy code that included plotting
-            file.write(f'\nCurve fit parameters for {dynamic}, static resid: {static_sel_resid})')
+            file.write(f'\nCurve fit parameters for {dynamic}, static resid: {static_sel_resid})')cd ..
 
             # write curve fit parameters
             if curvefit == 'k': # record STDEV of c if it was calculated
