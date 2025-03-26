@@ -339,7 +339,7 @@ for static_sel_resid in static_selection.resids:
     #need a try statement here because in some cases (if full of 0s or 1s etc), the curve-fitting function won't work and will give an error
     try:
         # plot if possible #
-        plt.scatter(time_timeseries, sp_timeseries, label=f'{static_sel_resid}')
+        plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}')
         # MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
         # the function was defined earlier in the code for clarity, and is simply called here
         surv_prob_curve_fit()
