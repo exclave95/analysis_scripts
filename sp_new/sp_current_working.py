@@ -405,24 +405,23 @@ for static_sel_resid in static_selection.resids:
 # # plt.rc('axes', prop_cycle = default_cycler)
 # # plt.grid()
 
-# ax.set_xlabel('Time (ps)')
-# ax.set_ylabel('SP')
-# # ax.legend()
-# plt.title(f'SP - {dynamic} within {radius} {static}')
+plt.xlabel('Time (ps)')
+plt.ylabel('SP')
+plt.title(f'SP - {dynamic} within {radius} {static}')
 
 # #%%
 # # PLOT GENERATION AND SAVING     
 
 # # define plot title
-# plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref{dynamic}'
+plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref{dynamic}'
 
-# #replace whitespaces with underscores and asterisks with
-# plot_title = plot_title.replace(' ','_')
+#replace whitespaces with underscores and asterisks with
+plot_title = plot_title.replace(' ','_')
 
-# #save figure - multiple options for presentations, thesis, publications, etc
-# plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
-# plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
+#save figure - multiple options for presentations, thesis, publications, etc
+plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
+plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
 
-# ax.legend()
-# plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
-# plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
+plt.legend()
+plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
+plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
