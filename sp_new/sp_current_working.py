@@ -230,10 +230,10 @@ with open("SP_results.txt", "w") as file:
 # colours = itertools.cycle(("red", "green", "blue", "orange"))
 
 # initialise plotting
-# fig, ax = plt.subplots()
+fig, ax = plt.subplots()
 
 # # make nice plots
-# plt.style.use(['science','notebook','grid','no-latex'])
+plt.style.use(['science','notebook','grid','no-latex'])
 # # weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
 # I don't understand why, but it is what it is
 ###############################################
