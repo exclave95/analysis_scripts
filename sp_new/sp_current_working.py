@@ -194,8 +194,9 @@ def surv_prob_curve_fit():
 #########################
 
 with open("SP_results.txt", "w") as file:
-    file.write('Survival Probability Curve-Fitting Results')
-    file.write('\n#########################')
+    file.write('\n##############################################')
+    file.write('\n# Survival Probability Curve-Fitting Results #')
+    file.write('\n##############################################')
     file.write(f"\nCalculated in directory: {cwd}")
     # file.write(f'\nReference: {ref}\nFull selection: ')
     file.write(f'\nDynamic: {dynamic}\nStatic: {static}\nGeometry: around {radius} Ångstrom(s)\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
@@ -205,11 +206,21 @@ with open("SP_results.txt", "w") as file:
         file.write(f'\nCurve fit equation: y = a * exp(-k * x) + c')
     elif curvefit =='k':
         file.write(f'\nCurve fit equation: y = exp(-k * x)')
+    file.write('''\n\nThe key aim of this code is to extract the time constant (1/k).
+               \nThis value gives an indication as to the lifetime of a particular species ("dynamic")
+               \nin a particular region - in this case a defined radius around the "static" group.
+               \nThe time-constant is also known as the MEAN LIFETIME,
+               \nand is defined by the time when the survival probability has decreased from 1 to 1/e (~ 0.368).
+               \nIt is up to the user to know whether this value and interpretation is of use for their system.''')
 
 
 
-#%%
-# MAIN CELL #
+
+############ LEGACY PLOTTING CODE ##############
+#### this is from when this code was written to ideally produce plots directly after calculation ####
+#### this turned out to not be possible after the code was rewritten to treat static selections individually ####
+#### BUT it might be possible if the code is further modified to filter through the SP data somehow ####
+#### idea for this future modification: filter through the SP results, and don't plot those that are 1,1,1,1,1... or 1,0,0,0... ####
 # plot formatting cycler - line colours and line styles
 # default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
                 #   cycler(linestyle=['-', '--', ':', '-.']))
@@ -225,15 +236,14 @@ with open("SP_results.txt", "w") as file:
 # plt.style.use(['science','notebook','grid','no-latex'])
 # # weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
 # I don't understand why, but it is what it is
+###############################################
 
-#selection of actinide atoms and actinyl residues
-# if ano2 == 'uo2':
-#     an = 'name Uo1'
-#     ano2_res = 'resname UO2'
-# elif ano2 == 'npo2':
-#     an = 'name No1'
-#     ano2_res = 'resname NPV'
-
+#########################################
+###### Static group atom selection ######
+#########################################
+# if tetrahedral substitution sites were selected as the static group, this if statement 'filters' this selection...
+# ...so that only those exposed to bulk solution are sampled
+# this isn't technically necessary, but it just reduces the calculation and the number of results needed to be sifted through
 if static == 'name AT*':
     # substitution sites
     #dimensions of simulation box (Sanity check):
@@ -262,9 +272,6 @@ if static == 'name AT*':
     static_selection = top_at + bottom_at    
 else:
     static_selection = u.select_atoms(f'{static}')
-
-# all_at = u.select_atoms('name AT*')
-# num_of_AT = len(surface_at) #should = 12. use this also for SEM calculation, if necessary
 
 
 #DIRECTLY FROM DOCUMENTATION - added by Lorenz lab group
@@ -331,10 +338,13 @@ for static_sel_resid in static_selection.resids:
     
     #need a try statement here because in some cases (if full of 0s or 1s etc), the curve-fitting function won't work and will give an error
     try:
+        # plot if possible #
+        plt.scatter(time_timeseries, sp_timeseries, label=f'{static_sel_resid}')
         # MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
         # the function was defined earlier in the code for clarity, and is simply called here
         surv_prob_curve_fit()
 
+        plt.plot(time_timeseries, y_fitted)
         # plotting colour and markers, added to results file as legend
         # colour = next(colours) #ensures same colour for both points and curve
         # plot_marker = next(marker)
@@ -358,7 +368,7 @@ for static_sel_resid in static_selection.resids:
                 file.write(f'\na = {a}\nk = {k}\nc = {c}')
 
             # write time constant
-            file.write(f'\n\nTime constant (1/k) = {time_constant}')
+            file.write(f'\n\nTime constant (1/k) = {time_constant} ps')
 
             # write curve fit parameter error values
             file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
@@ -379,6 +389,13 @@ for static_sel_resid in static_selection.resids:
     counter += 1
     # END OF MODIFICATION 3
 
+
+########
+# IDEA: Add a section either at the start or end of the SP_results.txt file
+# listing all the calculated k values. Relevant? Useful?
+########
+
+########## MORE LEGACY PLOTTING CODE ###########
 # # plotting
 # # plt.scatter(time_timeseries, sp_mean, c=colour, marker=plot_marker)
 # plt.scatter(time_timeseries, sp_timeseries, c=colour, marker=plot_marker )
@@ -409,19 +426,3 @@ for static_sel_resid in static_selection.resids:
 # ax.legend()
 # plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
 # plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
-
-
-
-
-
-
-
-
-
-# for site in sites:
-#     calculate SP for site
-#     if nan = False:
-#         plot(time, SP)
-#         curve_fit    
-
-# %%
