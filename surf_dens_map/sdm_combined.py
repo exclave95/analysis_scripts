@@ -385,8 +385,8 @@ def analysis_combined():
     ax.legend(loc='upper left')
     
     # axis labels
-    ax.set_xlabel(r'x ($\AA$)', fontsize=10)
-    ax.set_ylabel(r'y ($\AA$)', fontsize=10)
+    ax.set_xlabel(r'$x$ ($\AA$)', fontsize=10)
+    ax.set_ylabel(r'$y$ ($\AA$)', fontsize=10)
     
     # axis titles
     ax.set_title(rf'SDM {z0}-{z0+dz} ($\AA$)')
