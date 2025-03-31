@@ -362,15 +362,18 @@ def analysis_combined():
         if plot_type == 'contourf':
             print('Error: Plot type incompatible with combined plot')
         elif plot_type =='contour':
-            xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
-            import scipy.stats as st
-            positions = np.vstack([xx.ravel(), yy.ravel()])
-            values = np.vstack([pos_all_x, pos_all_y])
-            kernel = st.gaussian_kde(values)
-            kernel.set_bandwidth(bw_method=0.05)
-            f = np.reshape(kernel(positions).T, xx.shape)
-            colour = next(colours)
-            plt.contour(xx, yy, f, zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60, colors = colour)
+            try:
+                xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
+                import scipy.stats as st
+                positions = np.vstack([xx.ravel(), yy.ravel()])
+                values = np.vstack([pos_all_x, pos_all_y])
+                kernel = st.gaussian_kde(values)
+                kernel.set_bandwidth(bw_method=0.05)
+                f = np.reshape(kernel(positions).T, xx.shape)
+                colour = next(colours)
+                plt.contour(xx, yy, f, zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60, colors = colour)
+            except:
+                pass
         elif plot_type == 'scatter':
             colour = next(colours)
             marker = next(markers)
