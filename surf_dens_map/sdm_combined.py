@@ -237,8 +237,14 @@ def analysis_individual():
             # convert array into dataframe 
             pos_xy_df = pd.DataFrame(pos_xy) 
             
+            csv_filename = f'{i}_xy_top'
+            csv_filename = csv_filename.replace(' ','_')
+            csv_filename = csv_filename.replace('*','all')
+            
             # save the dataframe as a csv file 
-            pos_xy_df.to_csv(f"{i}_xy_top.csv")
+            pos_xy_df.to_csv(f"{csv_filename}.csv")
+
+
         else:
             print('Positions not being saved')        
 
