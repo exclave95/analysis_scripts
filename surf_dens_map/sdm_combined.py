@@ -266,14 +266,17 @@ def analysis_individual():
             f = np.reshape(kernel(positions).T, xx.shape)
             plt.contourf(xx, yy, f, cmap='viridis', zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60)
         elif plot_type =='contour':
-            xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
-            import scipy.stats as st
-            positions = np.vstack([xx.ravel(), yy.ravel()])
-            values = np.vstack([pos_all_x, pos_all_y])
-            kernel = st.gaussian_kde(values)
-            kernel.set_bandwidth(bw_method=0.05)
-            f = np.reshape(kernel(positions).T, xx.shape)
-            plt.contour(xx, yy, f, cmap='viridis', zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60)
+            try:
+                xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
+                import scipy.stats as st
+                positions = np.vstack([xx.ravel(), yy.ravel()])
+                values = np.vstack([pos_all_x, pos_all_y])
+                kernel = st.gaussian_kde(values)
+                kernel.set_bandwidth(bw_method=0.05)
+                f = np.reshape(kernel(positions).T, xx.shape)
+                plt.contour(xx, yy, f, cmap='viridis', zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60)
+            except:
+                pass
         elif plot_type == 'scatter':
             plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker="x", linewidths=1, color = 'red')
         elif plot_type == 'heatmap':
@@ -354,15 +357,18 @@ def analysis_combined():
         pos_all_y = np.transpose(pos_xy)[1]
 
         # SAVING TO CSV
+
         if csv == 'yes':
             print(f'Saving {i} xy coordinates into csv file')
             # convert array into dataframe 
             pos_xy_df = pd.DataFrame(pos_xy) 
             
+            csv_filename = f'{i}_xy_top'
+            csv_filename = csv_filename.replace(' ','_')
+            csv_filename = csv_filename.replace('*','all')
+            
             # save the dataframe as a csv file 
-            pos_xy_df.to_csv(f"{i}_xy_top.csv")
-        else:
-            print('Positions not being saved')        
+            pos_xy_df.to_csv(f"{csv_filename}.csv")
 
             
         if plot_type == 'contourf':
