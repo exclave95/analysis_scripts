@@ -302,7 +302,7 @@ def analysis_individual():
 
         # SAVING     
         # define plot title
-        plot_title = f'{i}_SDM_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_top'
+        plot_title = f'{i}_SDM_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
         #replace whitespaces with underscores
         plot_title = plot_title.replace(' ','_')
         #save figure
@@ -321,8 +321,7 @@ def analysis_combined():
     fig, ax = plt.subplots(figsize = (5,5), dpi=200)
 #            norm = mpl.colors.Normalize(vmin=0, vmax=10)
     for i in sel: 
-            
-                # create updating/dynamic atom selection depending on chosen side
+        # create updating/dynamic atom selection depending on chosen side
         if side == 'top':
             start_z = clay_max_z + z0
             end_z = start_z + dz
@@ -412,7 +411,7 @@ def analysis_combined():
 
     # SAVING     
     # define plot title
-    plot_title = f'SDM_multisel_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_top'
+    plot_title = f'SDM_multisel_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
     #replace whitespaces with underscores
     plot_title = plot_title.replace(' ','_')
     #save figure
