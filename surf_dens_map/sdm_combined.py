@@ -37,6 +37,7 @@
 #       e.g.    gmx_mpi make_ndx -f confout_PROD.gro -o surf_dens.ndx
 #       (c) Center trajectory using the index, keeping the surface centred (-center) and all atoms in simulation box (-pbc atom)       
 #       e.g.    gmx_mpi trjconv -f ../traj.trr -s ../topol.tpr -o ${d}_trajout_center.xtc -n traj_center.ndx -center -pbc atom
+#       Recommendation: create the centered trajectory for only the timeslice to be analysed - saves time and storage
 
 import numpy as np 
 import pandas as pd
@@ -374,6 +375,7 @@ def analysis_combined():
             print('Error: Plot type incompatible with combined plot')
         elif plot_type =='contour':
             try:
+                colour = next(colours)
                 xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
                 import scipy.stats as st
                 positions = np.vstack([xx.ravel(), yy.ravel()])
@@ -381,7 +383,6 @@ def analysis_combined():
                 kernel = st.gaussian_kde(values)
                 kernel.set_bandwidth(bw_method=0.05)
                 f = np.reshape(kernel(positions).T, xx.shape)
-                colour = next(colours)
                 plt.contour(xx, yy, f, zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60, colors = colour)
             except:
                 pass
@@ -396,12 +397,11 @@ def analysis_combined():
     plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='salmon', linewidths=4, zorder=10)               
 
     # axis legend
-    ax.legend(loc='upper left')
+    ax.legend(bbox_to_anchor=(1.5,0.5), fancybox=False, edgecolor='k')
     
     # axis labels
-    ax.set_xlabel(r'$x$ ($\AA$)', fontsize=10)
-    ax.set_ylabel(r'$y$ ($\AA$)', fontsize=10)
-    
+    ax.set_xlabel(r'$x$ ($\AA$)')
+    ax.set_ylabel(r'$y$ ($\AA$)')    
     # axis titles
     ax.set_title(rf'SDM {z0}-{z0+dz} ($\AA$)')
     
