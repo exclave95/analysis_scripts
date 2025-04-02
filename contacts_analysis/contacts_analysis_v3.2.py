@@ -146,8 +146,11 @@ for i in sel:
     #print(run)
     #print(np.shape(run))
     time_timeseries = run[0]
-    contacts_timeseries = run[1]    
+    contacts_timeseries = run[1]
+    contacts_timeseries = np.around(contacts_timeseries, 3) # round to 3 decimal places)    
     contacts_timeseries_per_molecule = contacts_timeseries/len_group_a
+    contacts_timeseries_per_molecule = np.around(contacts_timeseries_per_molecule, 3) # round to 3 decimal places)    
+
 
     # print('time', time_timeseries)
     # print('contacts', contacts_timeseries)
@@ -188,7 +191,9 @@ for i in sel:
     csv_filename = csv_filename.replace(' ','_')
     csv_filename = csv_filename.replace('*','all')
     csv_filename = csv_filename.replace('OB[!TS]', 'OB')
-    np.savetxt(f'{csv_filename}.csv', contacts_timeseries, delimiter = ',')
+    np.savetxt(f'{csv_filename}_total_contacts.csv', contacts_timeseries, delimiter = ',')
+    np.savetxt(f'{csv_filename}_TCN.csv', contacts_timeseries_per_molecule, delimiter = ',')
+
    
 
 plot_title = f'contacts_ref_{ref}_{frame_start}to{frame_stop}_{m}_{aw}aw'
