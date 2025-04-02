@@ -3,7 +3,11 @@
 ##### SURFACE DENSITY MAP GENERATOR FOR MOLECULAR DYNAMICS SIMULATIONS ##### 
 #              Written by Jakub LICKO, MChem       
 #
-#
+##### IMPORTANT USAGE NOTE:
+#  This code has ONLY been written to work for systems in the NVT ENSEMBLE (i.e. NO VOLUME FLUCTUATIONS)
+#  This is because before the sampling begins, the maximum and minimum z-coordinates of the clay layer are recorded and then used during analysis
+#  An NPT implementation of this code would require re-recording those z-values during every frame but this has not been done.
+#  You are welcome to adapt and implement this if you need to.
 #
 #  INSTRUCTIONS
 #  Example command line input:
@@ -31,6 +35,8 @@
 #       argparse
 #       sys
 #       logging
+#       scipy
+#       scienceplots (optional)
 #   (2) Trajectory preprocessing: clay surface being sampled needs to remain fixed
 #       (a) Select atom in clay surface to be sampled (e.g. atom 3521)
 #       (b) Create a Gromacs index containing chosen atom
@@ -258,14 +264,17 @@ def analysis_individual():
         fig, ax = plt.subplots(figsize = (5,5), dpi=200)
 #            norm = mpl.colors.Normalize(vmin=0, vmax=10)
         if plot_type == 'contourf':
-            xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
-            import scipy.stats as st
-            positions = np.vstack([xx.ravel(), yy.ravel()])
-            values = np.vstack([pos_all_x, pos_all_y])
-            kernel = st.gaussian_kde(values)
-            kernel.set_bandwidth(bw_method=0.05)
-            f = np.reshape(kernel(positions).T, xx.shape)
-            plt.contourf(xx, yy, f, cmap='viridis', zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60)
+            try:
+                xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
+                import scipy.stats as st
+                positions = np.vstack([xx.ravel(), yy.ravel()])
+                values = np.vstack([pos_all_x, pos_all_y])
+                kernel = st.gaussian_kde(values)
+                kernel.set_bandwidth(bw_method=0.05)
+                f = np.reshape(kernel(positions).T, xx.shape)
+                plt.contourf(xx, yy, f, cmap='viridis', zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60)
+            except:
+                pass
         elif plot_type =='contour':
             try:
                 xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
