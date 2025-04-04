@@ -192,12 +192,12 @@ def isomorphous_substitutions():
     ##########################################
     # SAVE SUBSTITUTION XY COORDINATES TO CSV?
     if csv == 'yes':
-    # convert array into dataframe 
-        at_xy_df = pd.DataFrame(at_xy)
-        mgo_xy_df = pd.DataFrame(mgo_xy)  
-    # save the dataframe as a csv file 
-        at_xy_df.to_csv("at_xy_top.csv")
-        mgo_xy_df.to_csv("mgo_xy_top.csv")
+        # convert array into dataframe 
+            at_xy_df = pd.DataFrame(at_xy)
+            mgo_xy_df = pd.DataFrame(mgo_xy)  
+        # save the dataframe as a csv file 
+            at_xy_df.to_csv(f"at_xy_{side}.csv")
+            mgo_xy_df.to_csv(f"mgo_xy_{side}.csv")
     else:
         print('Positions not being saved')  
 
