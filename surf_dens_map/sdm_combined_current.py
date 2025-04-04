@@ -173,6 +173,7 @@ def isomorphous_substitutions():
 
     # choose only x and y positions
     at_xy = at_pos[0:,0:2]
+    at_xy = np.around(at_xy, 3)
     all_at_x = np.transpose(at_xy)[0]
     all_at_y = np.transpose(at_xy)[1]
 
@@ -184,7 +185,8 @@ def isomorphous_substitutions():
 
     # store MGO positions in np array for later
     mgo_xy = mgo_pos[0:,0:2]
-    
+    mgo_xy = np.around(mgo_xy, 3)
+
     # select only x and y coordinates
     all_mgo_x = np.transpose(mgo_xy)[0]
     all_mgo_y = np.transpose(mgo_xy)[1]
