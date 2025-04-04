@@ -1,0 +1,2 @@
+sp_old is kept here because the directory was renamed and a new copy of the file was created, with no committing history. 
+So sp_old is kept here as the last commit point before sp_current_working.py was created 
