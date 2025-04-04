@@ -298,7 +298,7 @@ def analysis_individual():
 
         # axis legend
         ax.legend(loc='upper left')
-        
+        ax.grid(False)
         # axis labels
         ax.set_xlabel(r'x ($\AA$)', fontsize=10)
         ax.set_ylabel(r'y ($\AA$)', fontsize=10)
@@ -407,7 +407,7 @@ def analysis_combined():
 
     # axis legend
     ax.legend(bbox_to_anchor=(1.5,0.5), fancybox=False, edgecolor='k')
-    
+    ax.grid(False)
     # axis labels
     ax.set_xlabel(r'$x$ ($\AA$)')
     ax.set_ylabel(r'$y$ ($\AA$)')    
