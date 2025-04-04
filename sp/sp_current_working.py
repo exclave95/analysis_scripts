@@ -326,13 +326,15 @@ for static_sel_resid in static_selection.resids:
     # the value of the TIMESTEP is 2 by default, but it can be defined by the user with the -ts flag
     time_timeseries = [x * ts for x in tau_timeseries]
     time_timeseries = np.array(time_timeseries) #change it from a list into a numpy array
+    time_timeseries = np.around(time_timeseries, 3) #round it to 3 decimal places
     print(f'time timeseries: {time_timeseries}')
     # END OF MODIFICATION
 
     # define the surv prob array
     sp_timeseries = sp.sp_timeseries
     sp_timeseries = np.nan_to_num(np.array(sp_timeseries))
-    print(f'sp timeseries: {sp_timeseries}')
+    sp_timeseries = np.around(sp_timeseries, 3) # round to 3 dp
+    print(f'sp timeseries: {sp_timeseries}') 
     
 
     ####################################
