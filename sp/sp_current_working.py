@@ -372,9 +372,9 @@ for static_sel_resid in static_selection.resids:
     
         # should the data be plotted?
         if abs(time_constant) > 100000: # set arbitrary but clearly unrealistic time constant value, and made it absolute so that negatives are considered too
-            continue
+            pass
         elif time_constant == False: # if a time constant DOESN'T exist because there's no fitting data
-            continue
+            pass
         else:
             plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}', color=color, s=10)
             plt.plot(time_timeseries, y_fitted, color=color, linewidth=0.5)     
