@@ -189,15 +189,18 @@ def surv_prob_curve_fit():
 
     # calculate the time constant (1 / k)
     time_constant = 1/k
+    time_constant = round(time_constant, 3)
 
     # Additional Stats
     # Calculating the STDEV of each fitted parameter (popt) from the generated covariance matrix (pcov)
     # NOTE: pcov diagonal values are the VARIANCE (sigma^2) values for each popt (off-diagonal terms are covariance values)
     # the code below thus takes the square root of each diagonal term to calculate the Standard Deviation
     perr = np.sqrt(np.diag(pcov))
+    perr = round(perr, 3)
 
     # check for fit overparametrization with the Condition Number of the matrix
     cond_numb = np.linalg.cond(pcov)
+    cond_numb =round(cond_numb, 3)
 
     # LEGACY plotting code, kept from original curve_fit tutorial (link: HERE)
     # ax = plt.axes()
@@ -226,12 +229,12 @@ with open("SP_results.txt", "w") as file:
         file.write(f'\nCurve fit equation: y = a * exp(-k * x) + c')
     elif curvefit =='k':
         file.write(f'\nCurve fit equation: y = exp(-k * x)')
-    file.write('''\n\nThe key aim of this code is to extract the time constant (1/k).
-               \nThis value gives an indication as to the lifetime of a particular species ("dynamic")
-               \nin a particular region - in this case a defined radius around the "static" group.
-               \nThe time-constant is also known as the MEAN LIFETIME,
-               \nand is defined by the time when the survival probability has decreased from 1 to 1/e (~ 0.368).
-               \nIt is up to the user to know whether this value and interpretation is of use for their system.''')
+    # file.write('''\n\nThe key aim of this code is to extract the time constant (1/k).
+    #            \nThis value gives an indication as to the lifetime of a particular species ("dynamic")
+    #            \nin a particular region - in this case a defined radius around the "static" group.
+    #            \nThe time-constant is also known as the MEAN LIFETIME,
+    #            \nand is defined by the time when the survival probability has decreased from 1 to 1/e (~ 0.368).
+    #            \nIt is up to the user to know whether this value and interpretation is of use for their system.''')
 
 
 
@@ -364,10 +367,11 @@ for static_sel_resid in static_selection.resids:
         # the function was defined earlier in the code for clarity, and is simply called here
         surv_prob_curve_fit()
         color = next(ax._get_lines.prop_cycler)['color']
-
+    
+        # should the data be plotted?
         if abs(time_constant) > 100000: # set arbitrary but clearly unrealistic time constant value, and made it absolute so that negatives are considered too
             continue
-        elif time_constant = False:
+        elif time_constant == False: # if a time constant DOESN'T exist because there's no fitting data
             continue
         else:
             plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}', color=color, s=10)
