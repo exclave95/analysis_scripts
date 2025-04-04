@@ -107,7 +107,10 @@ u = mda.Universe(topol, traj, in_memory=False)
 # find current directory
 cwd = os.getcwd()
 
-# define curve fitting function
+#################################
+# define curve fitting function #
+#################################
+
 def surv_prob_curve_fit():
     # data prep - specifies how the SP timeseries data will be used by the function
     x = time_timeseries
@@ -186,48 +189,63 @@ def surv_prob_curve_fit():
     # ax.set_xlabel('x-Values')
     # ax.legend()
 
-# create results file
+#########################
+## create results file ##
+#########################
+
 with open("SP_results.txt", "w") as file:
-    file.write('Survival Probability Results')
-    file.write('\n#########################')
+    file.write('\n##############################################')
+    file.write('\n# Survival Probability Curve-Fitting Results #')
+    file.write('\n##############################################')
     file.write(f"\nCalculated in directory: {cwd}")
     # file.write(f'\nReference: {ref}\nFull selection: ')
-    file.write(f'\nGeometry: 4 A \nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
+    file.write(f'\nDynamic: {dynamic}\nStatic: {static}\nGeometry: around {radius} Ångstrom(s)\nframes: {frame_start} to {frame_stop}\ntau: {taumax}')
     if curvefit == "ak":
         file.write(f'\nCurve fit equation: y = a * exp(-k * x)')
     elif curvefit =='akc':
         file.write(f'\nCurve fit equation: y = a * exp(-k * x) + c')
     elif curvefit =='k':
         file.write(f'\nCurve fit equation: y = exp(-k * x)')
+    file.write('''\n\nThe key aim of this code is to extract the time constant (1/k).
+               \nThis value gives an indication as to the lifetime of a particular species ("dynamic")
+               \nin a particular region - in this case a defined radius around the "static" group.
+               \nThe time-constant is also known as the MEAN LIFETIME,
+               \nand is defined by the time when the survival probability has decreased from 1 to 1/e (~ 0.368).
+               \nIt is up to the user to know whether this value and interpretation is of use for their system.''')
 
 
 
-#%%
-# MAIN CELL #
+
+############ LEGACY PLOTTING CODE ##############
+#### this is from when this code was written to ideally produce plots directly after calculation ####
+#### this turned out to not be possible after the code was rewritten to treat static selections individually ####
+#### BUT it might be possible if the code is further modified to filter through the SP data somehow ####
+#### idea for this future modification: filter through the SP results, and don't plot those that are 1,1,1,1,1... or 1,0,0,0... ####
 # plot formatting cycler - line colours and line styles
 # default_cycler = (cycler(color=['r', 'g', 'b', 'orange']) +
                 #   cycler(linestyle=['-', '--', ':', '-.']))
 
 # define scatter plot colours and markers
-marker = itertools.cycle(('o', '+', 'x', '*'))
-colours = itertools.cycle(("red", "green", "blue", "orange"))
+# marker = itertools.cycle(('o', '+', 'x', '*'))
+# colours = itertools.cycle(("red", "green", "blue", "orange"))
 
+
+# # make nice plots
+plt.style.use(['science','notebook','grid','no-latex'])
 # initialise plotting
 fig, ax = plt.subplots()
 
-# make nice plots
-plt.style.use(['science','notebook','grid','no-latex'])
-# weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
+
+# # weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
 # I don't understand why, but it is what it is
+###############################################
 
-#selection of actinide atoms and actinyl residues
-# if ano2 == 'uo2':
-#     an = 'name Uo1'
-#     ano2_res = 'resname UO2'
-# elif ano2 == 'npo2':
-#     an = 'name No1'
-#     ano2_res = 'resname NPV'
-
+#########################################
+###### Static group atom selection ######
+#########################################
+# if tetrahedral substitution sites were selected as the static group, this if statement 'filters' this selection...
+# ...so that only those exposed to bulk solution are sampled
+# this isn't technically necessary, but it just reduces the calculation and the number of results needed to be sifted through
 if static == 'name AT*':
     # substitution sites
     #dimensions of simulation box (Sanity check):
@@ -254,9 +272,8 @@ if static == 'name AT*':
     bottom_at = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {bottom_layer})')
 
     static_selection = top_at + bottom_at    
-
-# all_at = u.select_atoms('name AT*')
-# num_of_AT = len(surface_at) #should = 12. use this also for SEM calculation, if necessary
+else:
+    static_selection = u.select_atoms(f'{static}')
 
 
 #DIRECTLY FROM DOCUMENTATION - added by Lorenz lab group
@@ -264,8 +281,15 @@ if static == 'name AT*':
 # so my averaging and data storage is different, but somewhat inspired by them
 # joined_sp_timeseries = [[] for _ in range(num_of_AT)]
 
+# counter for numbering files and looping
+counter = 1
+
 # calculation loop
 for static_sel_resid in static_selection.resids:
+    #################################################
+    ######## SURVIVAL PROBABILITY CALCULATION #######
+    #################################################
+
     # select reference and selection pair and calculate SP for it
     select = f"{dynamic} and around {radius} (resid {static_sel_resid} and {static})" # I wasn't able to find a different way to select for those AT 
     sp = SP(u, select, verbose=True)
@@ -286,100 +310,114 @@ for static_sel_resid in static_selection.resids:
     sp_timeseries = sp.sp_timeseries
     sp_timeseries = np.nan_to_num(np.array(sp_timeseries))
     print(f'sp timeseries: {sp_timeseries}')
-
-
-#####
-# this was also included in the Lorenz lab modification but I was unable to implement it, nor fully understand how it works#
-# so I've included it here as "legacy code", as well as somewhat of a reference
-# if I or someone else comes back to this and figure out how to implement it, or that this is better than my solution, it's already here    
-
-# raw sp points for each tau (directly from documentation)
-    # for sps, new_sps in zip(joined_sp_timeseries, sp.sp_timeseries_data):
-    #     sps.extend(new_sps)
-    #     print(sps)
-# sp_mean = [np.mean(sp) for sp in joined_sp_timeseries]
-#####
-
-
-# time_timeseries_list = time_timeseries.tolist()
-# time_and_sp_mean = time_timeseries_list, sp_mean
-# time_sp_data_to_save = np.transpose(np.array(time_and_sp_mean))
-
-
-
-    # print in console (optional, retained from the original documentation)
-#    for tau, sp in zip(tau_timeseries, sp_timeseries):
- #       print("{time} {sp}".format(time=tau, sp=sp))
-
-# MODIFICATION 2 - saving to CSV file 
-if csv == 'yes':
-    print(f'Saving {dynamic} values into csv file')
-    # surv_prob_data = time_timeseries, sp_mean
-    # surv_prob_data = time_timeseries_tolist, sp_mean
-    # surv_prob_data = np.transpose(sp_mean)
     
-    # define filename, replace whitespaces with underscores and asterisks with 'all' 
-    csv_filename = f'{dynamic}_surv_prob'
-    csv_filename = csv_filename.replace(' ','_')
-    csv_filename = csv_filename.replace('*','all')
 
-    # save as a csv file 
-    np.savetxt(f'{csv_filename}.csv', time_sp_data_to_save, delimiter = ',', header=f'SP timeseries of sel {an}, {radius} of ref {at_resid}\n{cwd}')  
-    with open('sp_data.txt', 'w') as file:
-        file.write()
-else:
-    print('Survival probability not being saved')   
-# END OF MODIFICATION 2
+    ####################################
+    ####### saving to CSV file #########
+    ####################################
+    
+    if csv == 'yes':
+        print(f'Saving {dynamic} values into csv file')
+        surv_prob_data = time_timeseries, sp_timeseries
+        surv_prob_data = np.transpose(surv_prob_data)
+        
+        # define filename, replace whitespaces with underscores and asterisks with 'all' 
+        csv_filename = f'{dynamic}_surv_prob_{counter}'
+        csv_filename = csv_filename.replace(' ','_')
+        csv_filename = csv_filename.replace('*','all')
 
-# MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
-# the function was defined earlier in the code for clarity, and is simply called here
-surv_prob_curve_fit()
+        # save as a csv file 
+        np.savetxt(f'{csv_filename}.csv', surv_prob_data, delimiter = ',', header=f'SP timeseries of sel {dynamic}, {radius} of ref {static}, count {counter}\n{cwd}')  
+        # with open('sp_data.txt', 'w') as file:
+        #     file.write()
+    else:
+        print('Survival probability not being saved')   
+    #   END OF MODIFICATION 2
 
-# plotting colour and markers, added to results file as legend
-colour = next(colours) #ensures same colour for both points and curve
-plot_marker = next(marker)
+    ###################################
+    ######### FIT TO CURVE ############
+    ###################################
+    
+    #need a try statement here because in some cases (if full of 0s or 1s etc), the curve-fitting function won't work and will give an error
+    try:
+        
+        color = next(ax._get_lines.prop_cycler)['color']
+        # plot if possible #
+        plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}', color=color, s=10)
+        # MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
+        # the function was defined earlier in the code for clarity, and is simply called here
+        surv_prob_curve_fit()
 
-# append results to txt file
-with open('SP_results.txt', 'a') as file:
-    file.write('\n--------------------')
-    file.write(f'\nCurve fit parameters for {an} ({colour} {plot_marker})')
-    file.write(f'\na = {a}\nk = {k}')
-    if cfit == 'yes': # record c value if it was calculated
-        file.write(f'\nc = {c}')
-    # else:
-    #     break
-    file.write(f'\n\nTime constant (1/k) = {time_constant}')
-    file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
-    file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
-    if cfit == 'yes': # record STDEV of c if it was calculated
-        file.write(f'\nc STDEV = {perr[2]}')
-    # else:
-    #     break
-    file.write(f'\n\nCovariance matrix:')
-    file.write(f'\n{pcov}')
-    file.write(f'\n\nCovariance matrix condition number (overfitting check)')
-    file.write(f'\n{cond_numb}\n')
-# END OF MODIFICATION 3
+        plt.plot(time_timeseries, y_fitted, color=color, linewidth=0.5)
+        # plotting colour and markers, added to results file as legend
+        # colour = next(colours) #ensures same colour for both points and curve
+        # plot_marker = next(marker)
 
-# plotting
-# plt.scatter(time_timeseries, sp_mean, c=colour, marker=plot_marker)
-plt.scatter(time_timeseries, sp_timeseries, c=colour, marker=plot_marker )
-plt.plot(x, y_fitted, c=colour)
+        ##############################
+        # Write results to txt file #
+        ##############################
+        with open('SP_results.txt', 'a') as file:
+            file.write('\n--------------------')
+            file.write(f'\n{counter}, corresponds to {csv_filename}')
 
-# ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
-# plt.rc('axes', prop_cycle = default_cycler)
-# plt.grid()
+            # file.write(f'\nCurve fit parameters for {dynamic} ({colour} {plot_marker})') # legacy code that included plotting
+            file.write(f'\nCurve fit parameters for {dynamic}, static resid: {static_sel_resid})')
 
-ax.set_xlabel('Time (ps)')
-ax.set_ylabel('SP')
-# ax.legend()
-plt.title(f'SP - {an} within {radius} AT')
+            # write curve fit parameters
+            if curvefit == 'k': # record STDEV of c if it was calculated
+                file.write(f'\nk = {k}')
+            elif curvefit == 'ak': # record STDEV of c if it was calculated
+                file.write(f'\na = {a}\nk = {k}')
+            elif curvefit == 'akc': # record STDEV of c if it was calculated
+                file.write(f'\na = {a}\nk = {k}\nc = {c}')
 
-#%%
-# PLOT GENERATION AND SAVING     
+            # write time constant
+            file.write(f'\n\nTime constant (1/k) = {time_constant} ps')
 
-# define plot title
-plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref{an}'
+            # write curve fit parameter error values
+            file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
+            if curvefit == 'k': # record STDEV of c if it was calculated
+                file.write(f'\nk STDEV = {perr[0]}')
+            elif curvefit =='ak':
+                file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
+            elif curvefit =='akc':
+                file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}\nc STDEV = {perr[2]}')
+        
+            # write covariance matrix   
+            file.write(f'\n\nCovariance matrix:')
+            file.write(f'\n{pcov}')
+            file.write(f'\n\nCovariance matrix condition number (overfitting check)')
+            file.write(f'\n{cond_numb}\n')
+    except:
+        pass
+    counter += 1
+    # END OF MODIFICATION 3
+
+
+########
+# IDEA: Add a section either at the start or end of the SP_results.txt file
+# listing all the calculated k values. Relevant? Useful?
+########
+
+########## MORE LEGACY PLOTTING CODE ###########
+# # plotting
+# # plt.scatter(time_timeseries, sp_mean, c=colour, marker=plot_marker)
+# plt.scatter(time_timeseries, sp_timeseries, c=colour, marker=plot_marker )
+# plt.plot(x, y_fitted, c=colour)
+
+# # ORDER IS IMPORTANT - plt.rc(...) must be first, THEN plt.grid()
+# # plt.rc('axes', prop_cycle = default_cycler)
+# # plt.grid()
+
+plt.xlabel('Time (ps)')
+plt.ylabel('SP')
+plt.title(f'SP - {dynamic} within {radius} {static}')
+
+# #%%
+# # PLOT GENERATION AND SAVING     
+
+# # define plot title
+plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref{dynamic}'
 
 #replace whitespaces with underscores and asterisks with
 plot_title = plot_title.replace(' ','_')
@@ -388,20 +426,6 @@ plot_title = plot_title.replace(' ','_')
 plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
 plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
 
-ax.legend()
+plt.legend()
 plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
 plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
-
-
-
-
-
-
-
-
-
-# for site in sites:
-#     calculate SP for site
-#     if nan = False:
-#         plot(time, SP)
-#         curve_fit    
