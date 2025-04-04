@@ -235,6 +235,7 @@ def analysis_individual():
         ### FILTER THROUGH RECORDED COORDINATES ###
         # select just the x and y coordinates
         pos_xy = pos[0:,0:2]
+        pos_xy = np.around(pos_xy, 3)
 
         # divide x and y into separate arrays
         pos_all_x = np.transpose(pos_xy)[0]
@@ -362,6 +363,8 @@ def analysis_combined():
         ### FILTER THROUGH RECORDED COORDINATES ###
         # select just the x and y coordinates
         pos_xy = pos[0:,0:2]
+        pos_xy = np.around(pos_xy, 3)
+
 
         # divide x and y into separate arrays
         pos_all_x = np.transpose(pos_xy)[0]
