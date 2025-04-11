@@ -265,8 +265,7 @@ with open("SP_results.txt", "w") as file:
 # # make nice plots
 plt.style.use(['science','notebook','grid','no-latex'])
 # initialise plotting
-fig, ax = plt.subplots()
-
+fig1, ax1 = plt.subplots() # combined figure
 
 # # weirdly, specifying 'no-latex' actually DOES generate plots with LaTeX font, even if it is not installed
 # I don't understand why, but it is what it is
@@ -378,18 +377,24 @@ for static_sel_resid in static_selection.resids:
         # print lambda
         print(time_constant)
 
-        # plot if not ISC or not non-existent
+        # plot combined figure if not ISC or not non-existent
         if abs(time_constant) > 100000 or time_constant == 0: # set arbitrary but clearly unrealistic time constant value, and made it absolute so that negatives are considered too
             pass
         else:
-            color = next(ax._get_lines.prop_cycler)['color']
-            plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}', color=color, s=5)
-            plt.plot(time_timeseries, y_fitted, color=color, linestyle = '--', linewidth=1)     
+            color = next(ax1._get_lines.prop_cycler)['color']
+            ax1.plot(time_timeseries, sp_timeseries, label=f'{counter}', color=color, linewidth=2)
+            # plt.plot(time_timeseries, y_fitted, color=color, linestyle = '--', linewidth=1)     
 
+            fig2, ax2 = plt.subplots(figsize=(3,3)) # separate figures
 
-# FUTURE MODIFICATION:
-# PLOT ALL RAW ON ONE PLOT
-# FOR EACH RAW, PLOT RAW + FIT ON SEPARATE FIGURE
+            ax2.plot(time_timeseries, sp_timeseries, label=f'{counter}', color=color, linewidth = 1)
+            ax2.plot(time_timeseries, y_fitted, color=color, linestyle = '--', linewidth=4)
+            ax2.set_xlabel('Time (ps)')
+            ax2.set_ylabel('SP')
+            ax2.set_ylim(-0.05,1.05)
+
+            fig2.savefig(f'SP_separate_{counter}.png', dpi=200, bbox_inches = 'tight')
+
 
         ##############################
         # Write results to txt file #
@@ -451,23 +456,24 @@ for static_sel_resid in static_selection.resids:
 # # plt.rc('axes', prop_cycle = default_cycler)
 # # plt.grid()
 
-plt.xlabel('Time (ps)')
-plt.ylabel('SP')
-plt.title(f'SP - {dynamic} within {radius} {static}')
+ax1.set_xlabel('Time (ps)')
+ax1.set_ylabel('SP')
+ax1.set_ylim(-0.05,1.05)
+ax1.set_title(f'SP - {dynamic} within {radius} {static}')
 
 # #%%
 # # PLOT GENERATION AND SAVING     
 
 # # define plot title
-plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref_{dynamic}'
+plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref_{dynamic}_combined'
 
 #replace whitespaces with underscores and asterisks with
 plot_title = plot_title.replace(' ','_')
 
 #save figure - multiple options for presentations, thesis, publications, etc
-plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
-plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
+fig1.savefig(f'{plot_title}_small.png', bbox_inches='tight')
+fig1.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
 
-plt.legend(fancybox=False, edgecolor='k', framealpha=0.8, shadow=True)
-plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
-plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
+fig1.legend(fancybox=False, edgecolor='k', framealpha=0.8, shadow=True)
+fig1.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
+fig1.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
