@@ -387,6 +387,10 @@ for static_sel_resid in static_selection.resids:
             plt.plot(time_timeseries, y_fitted, color=color, linestyle = '--', linewidth=1)     
 
 
+# FUTURE MODIFICATION:
+# PLOT ALL RAW ON ONE PLOT
+# FOR EACH RAW, PLOT RAW + FIT ON SEPARATE FIGURE
+
         ##############################
         # Write results to txt file #
         ##############################
