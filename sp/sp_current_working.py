@@ -19,6 +19,14 @@
 #       -csv : save info to csv file? 
 #       -taumax : number of frames to compute SP for
 #
+
+    #            The key aim of this code is to extract the time constant (1/k).
+    #            This value gives an indication as to the lifetime of a particular species ("dynamic")
+    #            in a particular region - in this case a defined radius around the "static" group.
+    #            The time-constant is also known as the MEAN LIFETIME,
+    #            and is defined by the time when the survival probability has decreased from 1 to 1/e (~ 0.368).
+    #            It is up to the user to know whether this value and interpretation is of use for their system.''')
+
 #
 #   Required installed python libraries (includes pre-installed libraries): 
 #       numpy
@@ -64,7 +72,7 @@ parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save SP of ligands to csv files? Options: yes (default), no')
 parser.add_argument('-taumax', default=20, help='number of frames to compute SP for')
-parser.add_argument('-curvefit', default='k', choices=['k','ak','akc'], help='which exp curve to fit for? exp(-kx), a*exp(-kx), or a*exp(-kx)+c')
+parser.add_argument('-curvefit', default='k', choices=['k','ak','kc','akc'], help='which exp curve to fit for? exp(-kx), exp(-kx)+c, a*exp(-kx), or a*exp(-kx)+c')
 
 # parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 args = vars(parser.parse_args())
@@ -107,32 +115,27 @@ u = mda.Universe(topol, traj, in_memory=False)
 # find current directory
 cwd = os.getcwd()
 
-# set printing precision to 3 decimal places (probably redundant since rounding is specified below) and suppress unnecessary scientific notation
-np.set_printoptions(precision=3, suppress=True)
-
-
 #################################
 # define curve fitting function #
 #################################
+
+def round_to_3_digits(value):
+    formatstr = '%.' + str(3)+'g'
+    return float(formatstr % value)
 
 def surv_prob_curve_fit():
     # data prep - specifies how the SP timeseries data will be used by the function
     x = time_timeseries
     y = sp_timeseries
-    
-    # fitting (x, y) data to the exponential decay curve: 
-    # y = a * exp(-k * x)
-    # OR
-    # y = a * exp(-k * x) + c
 
-    # parameters to be fitted: 
-    # a = pre-exponential factor 
+    # possible parameters to be fitted: 
+    # a = pre-exponential factor (optional) 
     # k = decay coefficient 
         # this is the key parameter for comparison between selected species
     # c = constant, serves as the horizontal asymptote (optional)
 
     # give parameters global scope (so the code can recognise them when the function is called)
-    global popt, pcov, perr, a, k, c, x_fitted, y_fitted, cond_numb, time_constant
+    global popt, pcov, perr, a, k, c, x_fitted, y_fitted, cond_numb, time_constant, errors_rounded
 
     if curvefit == 'ak':
         # define optimization parameters and their covariance coefficients
@@ -142,16 +145,26 @@ def surv_prob_curve_fit():
         # define a, k
         a = popt[0]
         k = popt[1]
-        
-        # round to 3 sig figs
-        a = round(a, 3)
-        k = round(k, 3)
-
-        # a, k =  float(f'{a:.3f}'), float(f'{k:.3f}')
 
         # define fitted x and y
         # x_fitted = np.linspace(np.min(x), np.max(x), 100) #why 100?
-        y_fitted = a * np.exp(-k * x)   
+        y_fitted = a * np.exp(-k * x)
+
+    elif curvefit == 'kc':
+        # define optimization parameters and their covariance coefficients
+        
+        popt, pcov = curve_fit(lambda t, k, c: (np.exp(-k * t)) + c, x, y)
+
+        # define k, c
+        k = popt[0]
+        k = round_to_3_digits(k)        
+        c = popt[1]
+        c = round_to_3_digits(c)        
+
+
+        # define fitted x and y
+        # x_fitted = np.linspace(np.min(x), np.max(x), 100) #why 100?
+        y_fitted = np.exp(-k * x) + c
 
     elif curvefit == 'akc':
         # define optimization parameters and their covariance coefficients
@@ -159,14 +172,11 @@ def surv_prob_curve_fit():
 
         # define a, k and c 
         a = popt[0]
+        a = round_to_3_digits(a)
         k = popt[1]
+        k = round_to_3_digits(k)        
         c = popt[2]
-
-        # round to 3 sig figs
-        a = round(a, 3)
-        k = round(k, 3)
-        c = round(c, 3)
-        # a, k, c = float(f'{a:.3f}'), float(f'{k:.3f}'), float(f'{c:.3f}') # set as floats with 3 sig fifgs
+        c = round_to_3_digits(c)        
 
         # define fitted x and y
         # x_fitted = np.linspace(np.min(x), np.max(x), 100) #again, why 100 again?
@@ -178,29 +188,32 @@ def surv_prob_curve_fit():
 
         # define a, k and c 
         k = popt[0]
-
-        k = round(k, 3)
-
-        # k = float(f'{k:.3f}') # set to floating point number with 3 sig figs
+        k = round_to_3_digits(k)        
 
         # define fitted x and y
         # x_fitted = np.linspace(np.min(x), np.max(x), 100) #again, why 100 again?
         y_fitted = np.exp(-k * x)
 
     # calculate the time constant (1 / k)
-    time_constant = 1/k
-    time_constant = round(time_constant, 3)
+    time_constant = 1 / k 
+    time_constant = round_to_3_digits(time_constant)
+    if np.isinf(time_constant) == True:
+        time_constant = 0
 
     # Additional Stats
     # Calculating the STDEV of each fitted parameter (popt) from the generated covariance matrix (pcov)
     # NOTE: pcov diagonal values are the VARIANCE (sigma^2) values for each popt (off-diagonal terms are covariance values)
     # the code below thus takes the square root of each diagonal term to calculate the Standard Deviation
     perr = np.sqrt(np.diag(pcov))
-    perr = round(perr, 3)
+
+    errors_rounded = []
+    for i in perr:
+        i = round_to_3_digits(i)
+        errors_rounded.append(i)
+    print(errors_rounded)
 
     # check for fit overparametrization with the Condition Number of the matrix
     cond_numb = np.linalg.cond(pcov)
-    cond_numb =round(cond_numb, 3)
 
     # LEGACY plotting code, kept from original curve_fit tutorial (link: HERE)
     # ax = plt.axes()
@@ -227,14 +240,10 @@ with open("SP_results.txt", "w") as file:
         file.write(f'\nCurve fit equation: y = a * exp(-k * x)')
     elif curvefit =='akc':
         file.write(f'\nCurve fit equation: y = a * exp(-k * x) + c')
+    elif curvefit =='kc':
+        file.write(f'\nCurve fit equation: y = exp(-k * x) + c')
     elif curvefit =='k':
         file.write(f'\nCurve fit equation: y = exp(-k * x)')
-    # file.write('''\n\nThe key aim of this code is to extract the time constant (1/k).
-    #            \nThis value gives an indication as to the lifetime of a particular species ("dynamic")
-    #            \nin a particular region - in this case a defined radius around the "static" group.
-    #            \nThe time-constant is also known as the MEAN LIFETIME,
-    #            \nand is defined by the time when the survival probability has decreased from 1 to 1/e (~ 0.368).
-    #            \nIt is up to the user to know whether this value and interpretation is of use for their system.''')
 
 
 
@@ -326,15 +335,13 @@ for static_sel_resid in static_selection.resids:
     # the value of the TIMESTEP is 2 by default, but it can be defined by the user with the -ts flag
     time_timeseries = [x * ts for x in tau_timeseries]
     time_timeseries = np.array(time_timeseries) #change it from a list into a numpy array
-    time_timeseries = np.around(time_timeseries, 3) #round it to 3 decimal places
     print(f'time timeseries: {time_timeseries}')
     # END OF MODIFICATION
 
     # define the surv prob array
     sp_timeseries = sp.sp_timeseries
     sp_timeseries = np.nan_to_num(np.array(sp_timeseries))
-    sp_timeseries = np.around(sp_timeseries, 3) # round to 3 dp
-    print(f'sp timeseries: {sp_timeseries}') 
+    print(f'sp timeseries: {sp_timeseries}')
     
 
     ####################################
@@ -365,22 +372,20 @@ for static_sel_resid in static_selection.resids:
     
     #need a try statement here because in some cases (if full of 0s or 1s etc), the curve-fitting function won't work and will give an error
     try:
-        # MODIFICATION 3 - FITTING THE SP DATA TO A CURVE AND SAVING CURVE PARAMETERS TO TEXT FILE
-        # the function was defined earlier in the code for clarity, and is simply called here
+        # fit curve
         surv_prob_curve_fit()
-        color = next(ax._get_lines.prop_cycler)['color']
-    
-        # should the data be plotted?
-        if abs(time_constant) > 100000: # set arbitrary but clearly unrealistic time constant value, and made it absolute so that negatives are considered too
-            pass
-        elif time_constant == False: # if a time constant DOESN'T exist because there's no fitting data
+        
+        # print lambda
+        print(time_constant)
+
+        # plot if not ISC or not non-existent
+        if abs(time_constant) > 100000 or time_constant == 0: # set arbitrary but clearly unrealistic time constant value, and made it absolute so that negatives are considered too
             pass
         else:
-            plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}', color=color, s=10)
-            plt.plot(time_timeseries, y_fitted, color=color, linewidth=0.5)     
-        # plotting colour and markers, added to results file as legend
-        # colour = next(colours) #ensures same colour for both points and curve
-        # plot_marker = next(marker)
+            color = next(ax._get_lines.prop_cycler)['color']
+            plt.scatter(time_timeseries, sp_timeseries, label=f'{counter}', color=color, s=5)
+            plt.plot(time_timeseries, y_fitted, color=color, linestyle = '--', linewidth=1)     
+
 
         ##############################
         # Write results to txt file #
@@ -393,11 +398,13 @@ for static_sel_resid in static_selection.resids:
             file.write(f'\nCurve fit parameters for {dynamic}, static resid: {static_sel_resid})')
 
             # write curve fit parameters
-            if curvefit == 'k': # record STDEV of c if it was calculated
+            if curvefit == 'k':
                 file.write(f'\nk = {k}')
-            elif curvefit == 'ak': # record STDEV of c if it was calculated
+            elif curvefit == 'ak': 
                 file.write(f'\na = {a}\nk = {k}')
-            elif curvefit == 'akc': # record STDEV of c if it was calculated
+            elif curvefit == 'kc': 
+                file.write(f'\nk = {k}\nc = {c}')
+            elif curvefit == 'akc':
                 file.write(f'\na = {a}\nk = {k}\nc = {c}')
 
             # write time constant
@@ -405,12 +412,14 @@ for static_sel_resid in static_selection.resids:
 
             # write curve fit parameter error values
             file.write(f'\n\nCurve fit parameter STDEV values (calculated by taking the square root of covariance matrix diagonal terms):')
-            if curvefit == 'k': # record STDEV of c if it was calculated
-                file.write(f'\nk STDEV = {perr[0]}')
+            if curvefit == 'k':
+                file.write(f'\nk STDEV = {errors_rounded[0]}')
             elif curvefit =='ak':
-                file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}')
+                file.write(f'\na STDEV = {errors_rounded[0]}\nk STDEV = {errors_rounded[1]}')
+            elif curvefit =='kc':
+                file.write(f'\nk STDEV = {errors_rounded[0]}\nc STDEV = {errors_rounded[1]}')
             elif curvefit =='akc':
-                file.write(f'\na STDEV = {perr[0]}\nk STDEV = {perr[1]}\nc STDEV = {perr[2]}')
+                file.write(f'\na STDEV = {errors_rounded[0]}\nk STDEV = {perr[1]}\nc STDEV = {errors_rounded[2]}')
         
             # write covariance matrix   
             file.write(f'\n\nCovariance matrix:')
@@ -446,7 +455,7 @@ plt.title(f'SP - {dynamic} within {radius} {static}')
 # # PLOT GENERATION AND SAVING     
 
 # # define plot title
-plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref{dynamic}'
+plot_title = f'SP_frame{frame_start}to{frame_stop}_tau{taumax}_ref_{dynamic}'
 
 #replace whitespaces with underscores and asterisks with
 plot_title = plot_title.replace(' ','_')
@@ -455,6 +464,6 @@ plot_title = plot_title.replace(' ','_')
 plt.savefig(f'{plot_title}_small.png', bbox_inches='tight')
 plt.savefig(f'{plot_title}_nolegend.png', dpi=200, bbox_inches = 'tight')
 
-plt.legend(fancybox=False, edgecolor='k', shadow=True, framealpha=0.7)
+plt.legend(fancybox=False, edgecolor='k', framealpha=0.8, shadow=True)
 plt.savefig(f'{plot_title}_withlegend_small.png', bbox_inches = 'tight')
 plt.savefig(f'{plot_title}_withlegend.png', dpi=200, bbox_inches = 'tight')
