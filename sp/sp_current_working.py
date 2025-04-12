@@ -73,6 +73,10 @@ parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save SP of ligands to csv files? Options: yes (default), no')
 parser.add_argument('-taumax', default=20, help='number of frames to compute SP for')
 parser.add_argument('-curvefit', default='k', choices=['k','ak','kc','akc'], help='which exp curve to fit for? exp(-kx), exp(-kx)+c, a*exp(-kx), or a*exp(-kx)+c')
+parser.add_argument('-constmin', help='MINimum value of time constant for PLOTTING. the value will still be printed into results file')
+parser.add_argument('-constmax', help='MAXimum value of time constant for PLOTTING. the value will still be printed into results file')
+
+
 
 # parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 args = vars(parser.parse_args())
@@ -87,12 +91,14 @@ static = args['static']
 # ano2 = args['ano2']
 # geom = args['geom']
 ts = int(args['ts'])
-radius = int(args['radius'])
+radius = float(args['radius'])
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 taumax = int(args['taumax'])
 csv = args['csv']
 curvefit = args['curvefit']
+constmin = float(args['constmin'])
+constmax = float(args['constmax'])
 
 # logging 
 logname = "SP.log"
@@ -378,11 +384,11 @@ for static_sel_resid in static_selection.resids:
         print(time_constant)
 
         # plot combined figure if not ISC or not non-existent
-        if abs(time_constant) > 100000 or time_constant == 0: # set arbitrary but clearly unrealistic time constant value, and made it absolute so that negatives are considered too
+        if abs(time_constant) > constmax or abs(time_constant) < constmin or time_constant == 0: # Set limits for which time constant curves to plot
             pass
         else:
             color = next(ax1._get_lines.prop_cycler)['color']
-            ax1.plot(time_timeseries, sp_timeseries, label=f'{counter}', color=color, linewidth=2)
+            ax1.plot(time_timeseries, sp_timeseries, label=f'{counter}', color=color, linewidth=3)
             # plt.plot(time_timeseries, y_fitted, color=color, linestyle = '--', linewidth=1)     
 
             fig2, ax2 = plt.subplots(figsize=(3,3)) # separate figures
