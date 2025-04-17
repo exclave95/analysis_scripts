@@ -395,13 +395,13 @@ def analysis_combined():
                 positions = np.vstack([xx.ravel(), yy.ravel()])
                 values = np.vstack([pos_all_x, pos_all_y])
                 kernel = st.gaussian_kde(values)
-                kernel.set_bandwidth(bw_method=0.05)
+                kernel.set_bandwidth(bw_method=0.1)
                 f = np.reshape(kernel(positions).T, xx.shape)
                 if colour == 'blue' or colour == 'orange':
-                    alpha = 0.5
+                    alpha = 0.3
                 else:
                     alpha = 1
-                plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = 20, vmin = 0.1, vmax = 0.60, colors = colour)
+                plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = 10, vmin = 0.5, vmax = 1, colors = colour)
             except:
                 pass
         elif plot_type == 'scatter':
@@ -411,8 +411,8 @@ def analysis_combined():
         elif plot_type == 'heatmap':
             print('Error: Plot type incompatible with combined plot')
         # plt.colorbar()
-    plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="^", color='cyan', linewidths=4, zorder=4)
-    plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="o", color='salmon', linewidths=4, zorder=10)               
+    plt.scatter(all_mgo_x, all_mgo_y, alpha=0.5, label='MGO', marker="o", edgecolors='none', color='k', s=40, zorder=4)
+    plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="^", color='k', linewidths=4, zorder=10)               
 
     # axis legend
     ax.legend(bbox_to_anchor=(1.5,0.5), fancybox=False, edgecolor='k')
