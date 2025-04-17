@@ -397,7 +397,11 @@ def analysis_combined():
                 kernel = st.gaussian_kde(values)
                 kernel.set_bandwidth(bw_method=0.05)
                 f = np.reshape(kernel(positions).T, xx.shape)
-                plt.contour(xx, yy, f, zorder=1, alpha=1, levels = 20, vmin = 0, vmax = 0.60, colors = colour)
+                if colour == 'blue' or colour == 'orange':
+                    alpha = 0.5
+                else:
+                    alpha = 1
+                plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = 20, vmin = 0.1, vmax = 0.60, colors = colour)
             except:
                 pass
         elif plot_type == 'scatter':
