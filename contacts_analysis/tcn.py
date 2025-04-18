@@ -53,7 +53,7 @@ parser.add_argument('-t', help='trajectory file')
 parser.add_argument('-s', default='topol.tpr', help='topology file')
 parser.add_argument('-ref', help='reference species')
 parser.add_argument('-sel', help='selection species. NOTE: string needs to be in quotation marks, separate selections with comma + space, e.g. resname A, resname B')
-# parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
+parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
 parser.add_argument('-stdev', default = 0, help='number of stdevs to plot for uncertainty')
@@ -70,7 +70,7 @@ ref = args['ref']
 sel = args['sel'].split(', ')
 traj = args['t']
 topol = args['s']
-#ts = int(args['ts'])
+timestep = int(args['ts'])
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 stdev = int(args['stdev'])
@@ -115,7 +115,7 @@ def contacts_within_cutoff(u, group_a, group_b, radius):
         # timeseries.append([ts.frame, n_contacts])
 
         # Create ns timeseries
-        t_ps = ts.frame * 2 # convert from frames to picoseconds (since timestep is 2 ps)
+        t_ps = ts.frame * timestep # convert from frames to picoseconds (default timestep is 2 ps)
         t_ns = t_ps / 1000 # convert from picoseconds to nanoseconds
         results_timeseries.append([t_ns, n_contacts])
 	#time_timeseries = results_timeseries[0]
