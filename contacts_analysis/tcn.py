@@ -70,7 +70,7 @@ ref = args['ref']
 sel = args['sel'].split(', ')
 traj = args['t']
 topol = args['s']
-timestep = int(args['ts'])
+timestep = float(args['ts'])
 frame_start = int(args['start'])
 frame_stop = int(args['stop'])
 stdev = int(args['stdev'])
@@ -130,7 +130,7 @@ plt.style.use(['science','notebook','grid','no-latex'])
 fig, ax = plt.subplots()
 
 # colour iterator for looped plotting
-colours = itertools.cycle(("red", "green", "blue", "gray", "pink"))
+# colours = itertools.cycle(("red", "green", "blue", "gray", "pink"))
 linestyles = itertools.cycle(("dashed", "-.", "solid", "solid","solid"))
 
 #plotting and median/mean loop
@@ -151,6 +151,16 @@ for i in sel:
     contacts_timeseries_per_molecule = contacts_timeseries/len_group_a
     contacts_timeseries_per_molecule = np.around(contacts_timeseries_per_molecule, 3) # round to 3 decimal places)    
 
+    if sel == "name OW*":
+        colour = 'blue'
+    elif sel == "type OG2D2":
+        colour = 'green'
+    elif sel == 'name Oc*':
+        colour = 'orange'
+    elif sel == "name OBT*":
+        colour == 'pink'
+    elif sel == "name OB[!TS]":
+        colour = 'gray'
 
     # print('time', time_timeseries)
     # print('contacts', contacts_timeseries)
@@ -163,7 +173,7 @@ for i in sel:
         # convert back to numpy array
         dataset_rollmedian_array = dataset_rollmedian_df.to_numpy()
 
-        colour = next(colours)
+        # colour = next(colours)
         linestyle = next(linestyles)
         plt.plot(time_timeseries, dataset_rollmedian_array, c=colour, label = f'{i}', linestyle=linestyle)
         plt.ylim(-0.1, 5.1)
@@ -177,12 +187,12 @@ for i in sel:
         # convert back to numpy array
         dataset_rollaverage_array = dataset_rollaverage_df.to_numpy()
 
-        colour = next(colours)
+        # colour = next(colours)
         linestyle = next(linestyles)
         plt.plot(time_timeseries, dataset_rollaverage_array, c=colour, label = f'{i}', linestyle = linestyle)
     
     elif m == 'no':
-        colour = next(colours)
+        # colour = next(colours)
         linestyle = next(linestyles)
         plt.plot(time_timeseries, contacts_timeseries_per_molecule, c=colour, label = f'{i}', linestyle = linestyle)
     
