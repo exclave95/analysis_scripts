@@ -69,7 +69,7 @@ parser.add_argument('-dynamic', help='what is the dynamic group (will be treated
 parser.add_argument('-z0', default='0', help='distance (Angstrom) from clay surface. default = 0, i.e. clay surface')
 parser.add_argument('-dz', help='thickness of sampling layer (Angstrom)')
 
-parser.add_argument('-side', choices=['top','bottom'] help='which "side" to analyse')
+parser.add_argument('-side', choices=['top','bottom'], help='which "side" to analyse')
 
 
 parser.add_argument('-start', default=0, help='initial frame to read')
