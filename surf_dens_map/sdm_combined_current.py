@@ -89,11 +89,6 @@ side = args['side']
 csv = args['csv']
 multi = args['multi']
 
-# specify colour of actinyl
-if "resname UO2" in sel:
-    ano2_colour = 'm'
-elif "resname NPV" in sel:
-    ano2_colour = 'y'
 
 # logging 
 logname = "surfdensmap.log"
@@ -384,29 +379,7 @@ def analysis_combined():
             # save the dataframe as a csv file 
             pos_xy_df.to_csv(f"{csv_filename}.csv")
 
-        # colour definitions    
-        if i == 'resname UO2':
-            colour = 'm'
-            alpha = 1
-        elif i == 'resname NPV':
-            colour == 'y'
-            alpha = 1
-        elif i == 'type OG2D2':
-            colour == 'green'
-            alpha = 1
-        elif i == 'name Oc*':
-            colour == 'orange'
-            alpha = 1
-        elif i == 'resname Na':
-            colour == 'blue'
-            alpha = 0.3
-        elif i == 'resname Ca':
-            colour == 'cyan'
-            alpha = 0.3
-        elif i == 'name HW*':
-            colour = 'blue'
-        elif i == 'name OW*':
-            colour == 'red'
+
 
         # plot type loop    
         if plot_type == 'contourf':
@@ -420,6 +393,29 @@ def analysis_combined():
                 kernel = st.gaussian_kde(values)
                 kernel.set_bandwidth(bw_method=0.1)
                 f = np.reshape(kernel(positions).T, xx.shape)
+                        # colour definitions    
+                if i == 'resname UO2':
+                    colour = 'm'
+                    alpha = 1
+                elif i == 'resname NPV':
+                    colour = 'y'
+                    alpha = 1
+                elif i == 'type OG2D2':
+                    colour = 'green'
+                    alpha = 1
+                elif i == 'name Oc*':
+                    colour = 'orange'
+                    alpha = 1
+                elif i == 'resname Na':
+                    colour = 'blue'
+                    alpha = 0.3
+                elif i == 'resname Ca':
+                    colour = 'cyan'
+                    alpha = 0.3
+                elif i == 'name HW*':
+                    colour = 'blue'
+                elif i == 'name OW*':
+                    colour = 'red'
                 plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = 10, vmin = 0.5, vmax = 1, colors = colour)
             except:
                 pass
