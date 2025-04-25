@@ -385,27 +385,27 @@ def analysis_combined():
             pos_xy_df.to_csv(f"{csv_filename}.csv")
 
         # colour definitions    
-        if sel == 'resname UO2':
+        if i == 'resname UO2':
             colour = 'm'
             alpha = 1
-        elif sel == 'resname NPV':
+        elif i == 'resname NPV':
             colour == 'y'
             alpha = 1
-        elif sel == 'type OG2D2':
+        elif i == 'type OG2D2':
             colour == 'green'
             alpha = 1
-        elif sel == 'name Oc*':
+        elif i == 'name Oc*':
             colour == 'orange'
             alpha = 1
-        elif sel == 'resname Na':
+        elif i == 'resname Na':
             colour == 'blue'
             alpha = 0.3
-        elif sel == 'resname Ca':
+        elif i == 'resname Ca':
             colour == 'cyan'
             alpha = 0.3
-        elif sel == 'name HW*':
+        elif i == 'name HW*':
             colour = 'blue'
-        elif sel == 'name OW*':
+        elif i == 'name OW*':
             colour == 'red'
 
         # plot type loop    
