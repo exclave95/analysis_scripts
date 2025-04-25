@@ -384,12 +384,35 @@ def analysis_combined():
             # save the dataframe as a csv file 
             pos_xy_df.to_csv(f"{csv_filename}.csv")
 
-            
+        # colour definitions    
+        if sel == 'resname UO2':
+            colour = 'm'
+            alpha = 1
+        elif sel == 'resname NPV':
+            colour == 'y'
+            alpha = 1
+        elif sel == 'type OG2D2':
+            colour == 'green'
+            alpha = 1
+        elif sel == 'name Oc*':
+            colour == 'orange'
+            alpha = 1
+        elif sel == 'resname Na':
+            colour == 'blue'
+            alpha = 0.3
+        elif sel == 'resname Ca':
+            colour == 'cyan'
+            alpha = 0.3
+        elif sel == 'name HW*':
+            colour = 'blue'
+        elif sel == 'name OW*':
+            colour == 'red'
+
+        # plot type loop    
         if plot_type == 'contourf':
             print('Error: Plot type incompatible with combined plot')
         elif plot_type =='contour':
             try:
-                colour = next(colours)
                 xx, yy = np.mgrid[minX:maxX:150j, minY:maxY:150j]
                 import scipy.stats as st
                 positions = np.vstack([xx.ravel(), yy.ravel()])
@@ -397,10 +420,6 @@ def analysis_combined():
                 kernel = st.gaussian_kde(values)
                 kernel.set_bandwidth(bw_method=0.1)
                 f = np.reshape(kernel(positions).T, xx.shape)
-                if colour == 'blue' or colour == 'orange':
-                    alpha = 0.3
-                else:
-                    alpha = 1
                 plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = 10, vmin = 0.5, vmax = 1, colors = colour)
             except:
                 pass
@@ -411,17 +430,17 @@ def analysis_combined():
         elif plot_type == 'heatmap':
             print('Error: Plot type incompatible with combined plot')
         # plt.colorbar()
-    plt.scatter(all_mgo_x, all_mgo_y, alpha=0.5, label='MGO', marker="o", edgecolors='none', color='k', s=40, zorder=4)
+    plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="o", edgecolors='none', color='k', s=40, zorder=4)
     plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="^", color='k', linewidths=4, zorder=10)               
 
     # axis legend
-    ax.legend(bbox_to_anchor=(1.5,0.5), fancybox=False, edgecolor='k')
+    # ax.legend(bbox_to_anchor=(1.5,0.5), fancybox=False, edgecolor='k')
     ax.grid(False)
     # axis labels
     ax.set_xlabel(r'$x$ ($\AA$)')
     ax.set_ylabel(r'$y$ ($\AA$)')    
     # axis titles
-    ax.set_title(rf'SDM {z0}-{z0+dz} ($\AA$)')
+    # ax.set_title(rf'SDM {z0}-{z0+dz} ($\AA$)')
     
     # set axis limits
     ax.set_xlim(minX, maxX)
