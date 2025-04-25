@@ -377,7 +377,7 @@ def analysis_combined():
             # convert array into dataframe 
             pos_xy_df = pd.DataFrame(pos_xy) 
             
-            csv_filename = f'{i}_xy_top'
+            csv_filename = f'{i}_xy_{side}_{z0}_to_{z0+dz}'
             csv_filename = csv_filename.replace(' ','_')
             csv_filename = csv_filename.replace('*','all')
             
