@@ -416,7 +416,12 @@ def analysis_combined():
                     colour = 'blue'
                 elif i == 'name OW*':
                     colour = 'red'
-                plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = 10, vmin = 0.5, vmax = 1, colors = colour)
+                plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = np.linspace(f.min(), f.max(), 11)[1:], vmin = 0.5, vmax = 1, colors = colour)
+                # the levels definition is crucial here. After multiple tests,
+                # several contour plots were produced with the 'lowest level' being far from the rest and creating a confusing picture
+                # this was undoubtedly an artefact of the way the KDE was being estimated, with some data points far from the others
+                # contributing to this.
+                # this new method that employs 'np.linspace' still plots 10 levels, but omits the lowest one
             except:
                 pass
         elif plot_type == 'scatter':
