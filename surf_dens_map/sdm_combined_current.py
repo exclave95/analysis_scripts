@@ -104,7 +104,7 @@ logger.info("")
         
 def setup():
     # make them global so they can be accessed in isomorphous_substitutions() and analysis() functions
-    global minX, maxX, minY, maxY, minZ, maxZ, clay_min_z, clay_max_z, u
+    global minX, maxX, minY, maxY, minZ, maxZ, clay_min_z, clay_max_z, u, zero_top, zero_bottom, top_atoms, bottom_atoms, zero_top_z, zero_bottom_z
 
     # define universe
     u = mda.Universe(topol, traj)
@@ -127,6 +127,19 @@ def setup():
     clay_min_z = np.min(clay_positions[2])
     clay_max_z = np.max(clay_positions[2])
 
+    # DEFINE ZERO POINTS
+
+    top_atoms = u.select_atoms(f'name OB* and (prop z <= {clay_max_z} and 'f'prop z >= {clay_max_z - 2})')
+    zero_top_positions = np.transpose(zero_top.positions)
+    zero_top_z = zero_top_positions[2]
+    zero_top = np.mean(zero_top_positions)
+    
+    bottom_atoms = u.select_atoms(f'name OB* and (prop z >= {clay_min_z} and 'f'prop z <= {clay_min_z + 2})')
+    zero_bottom_positions = np.transpose(zero_bottom.positions)
+    zero_bottom_z = zero_bottom_positions[2]
+    zero_bottom = np.mean(zero_bottom_positions)
+
+
     #inform user of inaccessible clay+interlayer width
     print(f'clay min z is {round(clay_min_z)}, clay max z is {round(clay_max_z)}')
     clay_thickness = clay_max_z - clay_min_z
@@ -136,7 +149,7 @@ def setup():
 ##### SUBSTITUTION SITES
 def isomorphous_substitutions():    
     # make positions global so they can be accessed in analysis() function
-    global all_at_x, all_at_y, all_mgo_x, all_mgo_y
+    global all_at_x, all_at_y, all_mgo_x, all_mgo_y, all_st_x, all_st_y
 
     # NOTE:
     # For Al(tet), selects AT atoms up to 2 Angstroms away from the basal clay surface (so only AT in the exposed layer)
@@ -144,21 +157,24 @@ def isomorphous_substitutions():
 
     if side == 'top':
         # TETRAHEDRAL AL
-        surface_at_only = clay_max_z - 2    
-        at_sel = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {surface_at_only})')
+        surface = clay_max_z - 2    
+        at_sel = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {surface})')
+        st_sel = u.select_atoms(f'name ST* and (prop z <= {clay_max_z} and 'f'prop z >= {surface})')
         
-        # OCTAHEDRAL MG
-        surface_mgo_only = clay_max_z - 4    
-        mgo_sel = u.select_atoms(f'name MGO* and (prop z <= {clay_max_z} and 'f'prop z >= {surface_mgo_only})')
+        # # OCTAHEDRAL MG
+        # surface_mgo_only = clay_max_z - 4    
+        # mgo_sel = u.select_atoms(f'name MGO* and (prop z <= {clay_max_z} and 'f'prop z >= {surface_mgo_only})')
     
     elif side == 'bottom':
         # TETRAHEDRAL AL
-        surface_at_only = clay_min_z + 2    
-        at_sel = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {surface_at_only})')
+        surface = clay_min_z + 2    
+        at_sel = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {surface})')
+        st_sel = u.select_atoms(f'name ST* and (prop z >= {clay_min_z} and 'f'prop z <= {surface})')
+
         
-        # OCTAHEDRAL MG        
-        surface_mgo_only = clay_min_z + 4    
-        mgo_sel = u.select_atoms(f'name MGO* and (prop z >= {clay_min_z} and 'f'prop z <= {surface_mgo_only})')
+        # # OCTAHEDRAL MG        
+        # surface_mgo_only = clay_min_z + 4    
+        # mgo_sel = u.select_atoms(f'name MGO* and (prop z >= {clay_min_z} and 'f'prop z <= {surface_mgo_only})')
 
     ########################################
     ##### SAVE AND MANIPULATE AT COORDINATES
@@ -172,29 +188,42 @@ def isomorphous_substitutions():
     all_at_x = np.transpose(at_xy)[0]
     all_at_y = np.transpose(at_xy)[1]
 
-    ##########################################
-    ##### SAVE AND MANIPULATE MGO COORDINATES
-    mgo_sel_pos = mgo_sel.positions
-    mgo_pos = np.empty((0,3))
-    mgo_pos = np.vstack((mgo_pos, mgo_sel_pos))
+    ########################################
+    ##### SAVE AND MANIPULATE ST COORDINATES
+    st_sel_pos = st_sel.positions    
+    st_pos = np.empty((0,3))
+    st_pos = np.vstack((st_pos, st_sel_pos))
 
-    # store MGO positions in np array for later
-    mgo_xy = mgo_pos[0:,0:2]
-    mgo_xy = np.around(mgo_xy, 3)
+    # choose only x and y positions
+    st_xy = st_pos[0:,0:2]
+    st_xy = np.around(st_xy, 3)
+    all_st_x = np.transpose(st_xy)[0]
+    all_st_y = np.transpose(st_xy)[1]
 
-    # select only x and y coordinates
-    all_mgo_x = np.transpose(mgo_xy)[0]
-    all_mgo_y = np.transpose(mgo_xy)[1]
+
+    # ##########################################
+    # ##### SAVE AND MANIPULATE MGO COORDINATES
+    # mgo_sel_pos = mgo_sel.positions
+    # mgo_pos = np.empty((0,3))
+    # mgo_pos = np.vstack((mgo_pos, mgo_sel_pos))
+
+    # # store MGO positions in np array for later
+    # mgo_xy = mgo_pos[0:,0:2]
+    # mgo_xy = np.around(mgo_xy, 3)
+
+    # # select only x and y coordinates
+    # all_mgo_x = np.transpose(mgo_xy)[0]
+    # all_mgo_y = np.transpose(mgo_xy)[1]
 
     ##########################################
     # SAVE SUBSTITUTION XY COORDINATES TO CSV?
     if csv == 'yes':
         # convert array into dataframe 
         at_xy_df = pd.DataFrame(at_xy)
-        mgo_xy_df = pd.DataFrame(mgo_xy)  
+        st_xy_df = pd.DataFrame(st_xy)  
         # save the dataframe as a csv file 
         at_xy_df.to_csv(f"at_xy_{side}.csv")
-        mgo_xy_df.to_csv(f"mgo_xy_{side}.csv")
+        st_xy_df.to_csv(f"st_xy_{side}.csv")
     else:
         print('Positions not being saved')  
 
@@ -203,11 +232,11 @@ def analysis_individual():
     for i in sel:
         # create updating/dynamic atom selection depending on chosen side
         if side == 'top':
-            start_z = clay_max_z + z0
+            start_z = zero_top + z0
             end_z = start_z + dz
             dynamic_sel = u.select_atoms(f'{i} and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
         if side == 'bottom':
-            start_z = clay_min_z - z0
+            start_z = zero_bottom - z0
             end_z = start_z - dz
             dynamic_sel = u.select_atoms(f'{i} and (prop z <= {start_z} and 'f'prop z >= {end_z})', updating = True)
 
@@ -331,11 +360,11 @@ def analysis_combined():
     for i in sel: 
         # create updating/dynamic atom selection depending on chosen side
         if side == 'top':
-            start_z = clay_max_z + z0
+            start_z = zero_top + z0
             end_z = start_z + dz
             dynamic_sel = u.select_atoms(f'{i} and (prop z >= {start_z} and 'f'prop z <= {end_z})', updating = True)
         if side == 'bottom':
-            start_z = clay_min_z - z0
+            start_z = zero_bottom - z0
             end_z = start_z - dz
             dynamic_sel = u.select_atoms(f'{i} and (prop z <= {start_z} and 'f'prop z >= {end_z})', updating = True)
 
@@ -431,7 +460,7 @@ def analysis_combined():
         elif plot_type == 'heatmap':
             print('Error: Plot type incompatible with combined plot')
         # plt.colorbar()
-    plt.scatter(all_mgo_x, all_mgo_y, alpha=1, label='MGO', marker="o", edgecolors='none', color='k', s=40, zorder=4)
+    plt.scatter(all_st_x, all_st_y, alpha=1, label='ST', marker="o", edgecolors='none', color='k', s=40, zorder=4)
     plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="^", color='k', linewidths=4, zorder=10)               
 
     # axis legend
