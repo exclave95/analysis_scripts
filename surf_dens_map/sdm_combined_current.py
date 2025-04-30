@@ -42,7 +42,7 @@
 #       (b) Create a Gromacs index containing chosen atom
 #       e.g.    gmx_mpi make_ndx -f confout_PROD.gro -o surf_dens.ndx
 #       (c) Center trajectory using the index, keeping the surface centred (-center) and all atoms in simulation box (-pbc atom)       
-#       e.g.    gmx_mpi trjconv -f ../traj.trr -s ../topol.tpr -o ${d}_trajout_center.xtc -n traj_center.ndx -center -pbc atom
+#       e.g.    gmx_mpi trjconv -f ../traj.trr -s ../topol.tpr -o trajout_center.xtc -n traj_center.ndx -center -pbc atom
 #       Recommendation: create the centered trajectory for only the timeslice to be analysed - saves time and storage
 
 import numpy as np 
