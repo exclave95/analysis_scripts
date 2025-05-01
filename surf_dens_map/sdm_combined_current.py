@@ -130,12 +130,12 @@ def setup():
     # DEFINE ZERO POINTS
 
     top_atoms = u.select_atoms(f'name OB* and (prop z <= {clay_max_z} and 'f'prop z >= {clay_max_z - 2})')
-    zero_top_positions = np.transpose(zero_top.positions)
+    zero_top_positions = np.transpose(top_atoms).positions)
     zero_top_z = zero_top_positions[2]
     zero_top = np.mean(zero_top_positions)
     
     bottom_atoms = u.select_atoms(f'name OB* and (prop z >= {clay_min_z} and 'f'prop z <= {clay_min_z + 2})')
-    zero_bottom_positions = np.transpose(zero_bottom.positions)
+    zero_bottom_positions = np.transpose(bottom_atoms.positions)
     zero_bottom_z = zero_bottom_positions[2]
     zero_bottom = np.mean(zero_bottom_positions)
 
