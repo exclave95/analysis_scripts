@@ -141,8 +141,8 @@ def setup():
 
 
     #inform user of inaccessible clay+interlayer width
-    print(f'clay min z is {round(clay_min_z)}, clay max z is {round(clay_max_z)}')
-    clay_thickness = clay_max_z - clay_min_z
+    print(f'clay min z is {round(zero_bottom)}, clay max z is {round(zero_top)}')
+    clay_thickness = zero_top - zero_bottom
     print(f'inaccessible layer (2 clay layers and interlayer) is {round(clay_thickness)} Angstroms')
 
 # %%
@@ -157,9 +157,9 @@ def isomorphous_substitutions():
 
     if side == 'top':
         # TETRAHEDRAL AL
-        surface = clay_max_z - 2    
-        at_sel = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {surface})')
-        st_sel = u.select_atoms(f'name ST* and (prop z <= {clay_max_z} and 'f'prop z >= {surface})')
+        surface_atoms = zero_top - 2    
+        at_sel = u.select_atoms(f'name AT* and (prop z <= {zero_top} and 'f'prop z >= {surface_atoms})')
+        st_sel = u.select_atoms(f'name ST* and (prop z <= {zero_top} and 'f'prop z >= {surface_atoms})')
         
         # # OCTAHEDRAL MG
         # surface_mgo_only = clay_max_z - 4    
@@ -167,9 +167,9 @@ def isomorphous_substitutions():
     
     elif side == 'bottom':
         # TETRAHEDRAL AL
-        surface = clay_min_z + 2    
-        at_sel = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {surface})')
-        st_sel = u.select_atoms(f'name ST* and (prop z >= {clay_min_z} and 'f'prop z <= {surface})')
+        surface_atoms = zero_bottom + 2    
+        at_sel = u.select_atoms(f'name AT* and (prop z >= {zero_bottom} and 'f'prop z <= {surface_atoms})')
+        st_sel = u.select_atoms(f'name ST* and (prop z >= {zero_bottom} and 'f'prop z <= {surface_atoms})')
 
         
         # # OCTAHEDRAL MG        
@@ -350,7 +350,7 @@ def analysis_combined():
 
     plt.style.use(['science','notebook','grid','no-latex'])
 
-    colours = itertools.cycle((ano2_colour, "red", "green", "blue", "orange"))
+    #colours = itertools.cycle((ano2_colour, "red", "green", "blue", "orange"))
     markers = itertools.cycle(('^','o', '+', 'x', '*'))
 
 
@@ -460,7 +460,7 @@ def analysis_combined():
         elif plot_type == 'heatmap':
             print('Error: Plot type incompatible with combined plot')
         # plt.colorbar()
-    plt.scatter(all_st_x, all_st_y, alpha=1, label='ST', marker="o", edgecolors='none', color='k', s=40, zorder=4)
+    plt.scatter(all_st_x, all_st_y, alpha=1, label='ST', marker="o", edgecolors='none', color='k', s=40, zorder=4, linewidths = 2)
     plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="^", color='k', linewidths=4, zorder=10)               
 
     # axis legend
