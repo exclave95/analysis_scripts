@@ -73,6 +73,7 @@ parser.add_argument('-plot', choices=['contour','contourf','heatmap','scatter'],
 parser.add_argument('-side', choices=['top','bottom'], default='top', help='which exposed clay layer to use for analysis. default: top, i.e. the face with the highest z coordinates')
 parser.add_argument('-csv', choices=['yes','no'], default = 'yes', help='Save positions of selections and substitution sites to csv files? Options: yes (default), no')
 parser.add_argument('-multi', choices=['yes','no'], default = 'yes', help='Multiple selections on one plot. Default yes, otherwise separate plots for each species')
+# NOTE: Individual analysis is out of date
 args = vars(parser.parse_args())
 
 # convert user inputs into variables to use later
