@@ -129,15 +129,32 @@ def setup():
 
     # DEFINE ZERO POINTS
 
-    top_atoms = u.select_atoms(f'name OB* and (prop z <= {clay_max_z} and 'f'prop z >= {clay_max_z - 2})')
-    zero_top_positions = np.transpose(top_atoms.positions)
-    zero_top_z = zero_top_positions[2]
-    zero_top = np.mean(zero_top_positions)
+    # top_atoms = u.select_atoms(f'name OB* and (prop z <= {clay_max_z} and 'f'prop z >= {clay_max_z - 2})')
+    # zero_top_positions = np.transpose(top_atoms.positions)
+    # zero_top_z = zero_top_positions[2]
+    # zero_top = np.mean(zero_top_positions)
     
-    bottom_atoms = u.select_atoms(f'name OB* and (prop z >= {clay_min_z} and 'f'prop z <= {clay_min_z + 2})')
-    zero_bottom_positions = np.transpose(bottom_atoms.positions)
-    zero_bottom_z = zero_bottom_positions[2]
-    zero_bottom = np.mean(zero_bottom_positions)
+    # bottom_atoms = u.select_atoms(f'name OB* and (prop z >= {clay_min_z} and 'f'prop z <= {clay_min_z + 2})')
+    # zero_bottom_positions = np.transpose(bottom_atoms.positions)
+    # zero_bottom_z = zero_bottom_positions[2]
+    # zero_bottom = np.mean(zero_bottom_positions)
+
+
+
+
+    ob_filter = u.select_atoms(f'name OB* and (prop z <= {np.max(clay_positions[2])} and 'f'prop z >= {np.max(clay_positions[2]) - 2})')
+    ob_filter_pos = np.transpose(ob_filter.positions)
+    ob_filter_z = ob_filter_pos[2]
+    zero_top = np.mean(ob_filter_z)
+
+    ob_filter = u.select_atoms(f'name OB* and (prop z >= {np.min(clay_positions[2])} and 'f'prop z <= {np.min(clay_positions[2]) + 2})')
+    ob_filter_pos = np.transpose(ob_filter.positions)
+    ob_filter_z = ob_filter_pos[2]
+    zero_bottom = np.mean(ob_filter_z)
+
+
+
+
 
 
     #inform user of inaccessible clay+interlayer width
@@ -157,9 +174,9 @@ def isomorphous_substitutions():
 
     if side == 'top':
         # TETRAHEDRAL AL
-        surface_atoms = zero_top - 2    
-        at_sel = u.select_atoms(f'name AT* and (prop z <= {zero_top} and 'f'prop z >= {surface_atoms})')
-        st_sel = u.select_atoms(f'name ST* and (prop z <= {zero_top} and 'f'prop z >= {surface_atoms})')
+        # surface_atoms = clay_max_z - 3    
+        at_sel = u.select_atoms(f'name AT* and (prop z <= {clay_max_z} and 'f'prop z >= {clay_max_z - 3})')
+        st_sel = u.select_atoms(f'name ST* and (prop z <= {clay_max_z} and 'f'prop z >= {clay_max_z - 3})')
         
         # # OCTAHEDRAL MG
         # surface_mgo_only = clay_max_z - 4    
@@ -167,9 +184,9 @@ def isomorphous_substitutions():
     
     elif side == 'bottom':
         # TETRAHEDRAL AL
-        surface_atoms = zero_bottom + 2    
-        at_sel = u.select_atoms(f'name AT* and (prop z >= {zero_bottom} and 'f'prop z <= {surface_atoms})')
-        st_sel = u.select_atoms(f'name ST* and (prop z >= {zero_bottom} and 'f'prop z <= {surface_atoms})')
+        # surface_atoms = clay_min_z + 3    
+        at_sel = u.select_atoms(f'name AT* and (prop z >= {clay_min_z} and 'f'prop z <= {clay_min_z + 3 })')
+        st_sel = u.select_atoms(f'name ST* and (prop z >= {clay_min_z} and 'f'prop z <= {clay_min_z + 3 })')
 
         
         # # OCTAHEDRAL MG        
@@ -454,14 +471,14 @@ def analysis_combined():
             except:
                 pass
         elif plot_type == 'scatter':
-            colour = next(colours)
+            # colour = next(colours)
             marker = next(markers)
             plt.scatter(pos_all_x, pos_all_y, alpha=0.1, label=f'{i}', marker=marker, linewidths=1, c = colour)
         elif plot_type == 'heatmap':
             print('Error: Plot type incompatible with combined plot')
         # plt.colorbar()
-    plt.scatter(all_st_x, all_st_y, alpha=1, label='ST', marker="o", edgecolors='none', color='k', s=40, zorder=4, linewidths = 2)
-    plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="^", color='k', linewidths=4, zorder=10)               
+    plt.scatter(all_st_x, all_st_y, alpha=1, label='ST', marker="o", edgecolors='k', facecolors='none', s=10, zorder=4, linewidths = 1)
+    plt.scatter(all_at_x, all_at_y, alpha=1, label='AT', marker="^", color='k', linewidths=2, zorder=10)               
 
     # axis legend
     # ax.legend(bbox_to_anchor=(1.5,0.5), fancybox=False, edgecolor='k')
