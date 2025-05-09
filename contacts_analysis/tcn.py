@@ -158,7 +158,7 @@ for i in sel:
     elif i == 'name Oc*':
         colour = 'orange'
     elif i == "name OBT*":
-        colour == 'pink'
+        colour = 'pink'
     elif i == "name OB[!TS]":
         colour = 'gray'
 
