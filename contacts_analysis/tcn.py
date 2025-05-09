@@ -151,15 +151,15 @@ for i in sel:
     contacts_timeseries_per_molecule = contacts_timeseries/len_group_a
     contacts_timeseries_per_molecule = np.around(contacts_timeseries_per_molecule, 3) # round to 3 decimal places)    
 
-    if sel == "name OW*":
+    if i == "name OW*":
         colour = 'blue'
-    elif sel == "type OG2D2":
+    elif i == "type OG2D2":
         colour = 'green'
-    elif sel == 'name Oc*':
+    elif i == 'name Oc*':
         colour = 'orange'
-    elif sel == "name OBT*":
+    elif i == "name OBT*":
         colour == 'pink'
-    elif sel == "name OB[!TS]":
+    elif i == "name OB[!TS]":
         colour = 'gray'
 
     # print('time', time_timeseries)
