@@ -143,15 +143,15 @@ def setup():
 
 
 
-    ob_filter = u.select_atoms(f'name OB* and (prop z <= {np.max(clay_positions[2])} and 'f'prop z >= {np.max(clay_positions[2]) - 2})')
-    ob_filter_pos = np.transpose(ob_filter.positions)
-    ob_filter_z = ob_filter_pos[2]
-    zero_top = np.mean(ob_filter_z)
+    ob_filter_top = u.select_atoms(f'name OB* and (prop z <= {np.max(clay_positions[2])} and 'f'prop z >= {np.max(clay_positions[2]) - 2})')
+    ob_filter_top_pos = np.transpose(ob_filter_top.positions)
+    ob_filter_top_z = ob_filter_top_pos[2]
+    zero_top = np.mean(ob_filter_top_z)
 
-    ob_filter = u.select_atoms(f'name OB* and (prop z >= {np.min(clay_positions[2])} and 'f'prop z <= {np.min(clay_positions[2]) + 2})')
-    ob_filter_pos = np.transpose(ob_filter.positions)
-    ob_filter_z = ob_filter_pos[2]
-    zero_bottom = np.mean(ob_filter_z)
+    ob_filter_bottom = u.select_atoms(f'name OB* and (prop z >= {np.min(clay_positions[2])} and 'f'prop z <= {np.min(clay_positions[2]) + 2})')
+    ob_filter_bottom_pos = np.transpose(ob_filter_bottom.positions)
+    ob_filter_bottom_z = ob_filter_bottom_pos[2]
+    zero_bottom = np.mean(ob_filter_bottom_z)
 
 
 
@@ -426,6 +426,28 @@ def analysis_combined():
             # save the dataframe as a csv file 
             pos_xy_df.to_csv(f"{csv_filename}.csv")
 
+        if i == 'resname UO2':
+            colour = 'm'
+            alpha = 1
+        elif i == 'resname NPV':
+            colour = 'y'
+            alpha = 1
+        elif i == 'type OG2D2':
+            colour = 'green'
+            alpha = 1
+        elif i == 'name Oc*':
+            colour = 'orange'
+            alpha = 1
+        elif i == 'resname Na':
+            colour = 'blue'
+            alpha = 0.3
+        elif i == 'resname Ca':
+            colour = 'cyan'
+            alpha = 0.3
+        elif i == 'name HW*':
+            colour = 'blue'
+        elif i == 'name OW*':
+            colour = 'red'
 
 
         # plot type loop    
@@ -441,28 +463,7 @@ def analysis_combined():
                 kernel.set_bandwidth(bw_method=0.1)
                 f = np.reshape(kernel(positions).T, xx.shape)
                         # colour definitions    
-                if i == 'resname UO2':
-                    colour = 'm'
-                    alpha = 1
-                elif i == 'resname NPV':
-                    colour = 'y'
-                    alpha = 1
-                elif i == 'type OG2D2':
-                    colour = 'green'
-                    alpha = 1
-                elif i == 'name Oc*':
-                    colour = 'orange'
-                    alpha = 1
-                elif i == 'resname Na':
-                    colour = 'blue'
-                    alpha = 0.3
-                elif i == 'resname Ca':
-                    colour = 'cyan'
-                    alpha = 0.3
-                elif i == 'name HW*':
-                    colour = 'blue'
-                elif i == 'name OW*':
-                    colour = 'red'
+
                 plt.contour(xx, yy, f, zorder=1, alpha=alpha, levels = np.linspace(f.min(), f.max(), 11)[1:], vmin = 0.5, vmax = 1, colors = colour)
                 # the levels definition is crucial here. After multiple tests,
                 # several contour plots were produced with the 'lowest level' being far from the rest and creating a confusing picture
