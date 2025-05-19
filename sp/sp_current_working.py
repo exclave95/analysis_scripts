@@ -327,9 +327,38 @@ for static_sel_resid in static_selection.resids:
     ######## SURVIVAL PROBABILITY CALCULATION #######
     #################################################
 
+    import MDAnalysis.transformations as trans
+    u2 = mda.Universe(topol, traj, in_memory=False)
+    at_site = u2.select_atoms(f'resid {static_sel_resid} and {static}')
+
+    # not_at_site = u2.select_atoms('not (name AT* and resid 1)')
+
+    # # transforms = [trans.unwrap(u2.atoms)]
+    # #             # trans.center_in_box(at_site, center='geometry'),
+    # #             # trans.wrap(not_at_site)]
+    # transforms = [
+    #     trans.translate(-at_site.center_of_mass()),   # Move the reference atom to the origin
+    #     trans.wrap(at_site, compound='atoms')  # Wrap all atoms into the box relative to the reference atom
+    # ]
+
+    def center_atom_in_box(ts):
+        # Get box center from dimensions (ts.dimensions[:3] = box lengths in x, y, z)
+        box_center = 0.5 * ts.dimensions[:3]
+        
+        # Compute shift needed to move the reference atom to the box center
+        shift_vector = box_center - at_site.center_of_mass()
+        
+        # Apply the shift
+        u2.atoms.translate(shift_vector)
+
+        return ts
+
+    # Add transformations: center the atom in the box, then wrap all atoms
+    u2.trajectory.add_transformations(center_atom_in_box, trans.wrap(u2.atoms, compound='atoms'))
+
     # select reference and selection pair and calculate SP for it
     select = f"{dynamic} and around {radius} (resid {static_sel_resid} and {static})" # I wasn't able to find a different way to select for those AT 
-    sp = SP(u, select, verbose=True)
+    sp = SP(u2, select, verbose=True)
     sp.run(start=frame_start, stop=frame_stop, tau_max=taumax)
     tau_timeseries = sp.tau_timeseries
 
