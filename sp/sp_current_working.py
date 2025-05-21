@@ -67,6 +67,7 @@ parser.add_argument('-s', default='topol.tpr', help='topology file')
 parser.add_argument('-ts', default=2, help='timestep (in ps) BETWEEN FRAMES')
 parser.add_argument('-dynamic', help='what is the dynamic group (will be treated together)? e.g. neptunium atoms adsorbed on clay')
 parser.add_argument('-static', help='what is the static group (will be treated separately)? e.g. the AT* sites on a clay surface')
+parser.add_argument('-intermittency', help='how many frames can the dynamic group leave the geometry for')
 parser.add_argument('-radius', help='radius (or cut-off) to calculate SP for')
 parser.add_argument('-start', default=0, help='initial frame to read')
 parser.add_argument('-stop', default=-1, help='final frame to read')
@@ -99,6 +100,7 @@ csv = args['csv']
 curvefit = args['curvefit']
 constmin = float(args['constmin'])
 constmax = float(args['constmax'])
+intermittency = args['intermittency']
 
 # logging 
 logname = "SP.log"
@@ -359,7 +361,7 @@ for static_sel_resid in static_selection.resids:
     # select reference and selection pair and calculate SP for it
     select = f"{dynamic} and around {radius} (resid {static_sel_resid} and {static})" # I wasn't able to find a different way to select for those AT 
     sp = SP(u2, select, verbose=True)
-    sp.run(start=frame_start, stop=frame_stop, tau_max=taumax)
+    sp.run(start=frame_start, stop=frame_stop, tau_max=taumax, intermittency=intermittency)
     tau_timeseries = sp.tau_timeseries
 
     ######## MY MODIFICATION 1 - TIMESTEP MULTIPLIER
