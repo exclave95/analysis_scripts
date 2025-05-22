@@ -100,7 +100,7 @@ csv = args['csv']
 curvefit = args['curvefit']
 constmin = float(args['constmin'])
 constmax = float(args['constmax'])
-intermittency = args['intermittency']
+intermittency = int(args['intermittency'])
 
 # logging 
 logname = "SP.log"
