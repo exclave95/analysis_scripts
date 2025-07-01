@@ -1,6 +1,7 @@
 #! /usr/bin/python
 #
 #
+#
 ##### SURVIVAL PROBABILITY PLOT FOR MOLECULAR DYNAMICS SIMULATIONS ##### 
 #              Written by Jakub LICKO, MChem    
 #              Adapted from MDAnalysis official documentation (insert ref)   
