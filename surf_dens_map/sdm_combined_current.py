@@ -3,6 +3,7 @@
 ##### SURFACE DENSITY MAP GENERATOR FOR MOLECULAR DYNAMICS SIMULATIONS ##### 
 #              Written by Jakub LICKO, MChem       
 #
+#
 ##### IMPORTANT USAGE NOTE:
 #  This code has ONLY been written to work for systems in the NVT ENSEMBLE (i.e. NO VOLUME FLUCTUATIONS)
 #  This is because before the sampling begins, the maximum and minimum z-coordinates of the clay layer are recorded and then used during analysis
