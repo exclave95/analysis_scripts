@@ -358,7 +358,7 @@ def analysis_individual():
 
         # SAVING     
         # define plot title
-        plot_title = f'{i}_SDM_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+        plot_title = f'{i}_SDM_{side}_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}'
         #replace whitespaces with underscores
         plot_title = plot_title.replace(' ','_')
         #save figure
@@ -498,7 +498,7 @@ def analysis_combined():
 
     # SAVING     
     # define plot title
-    plot_title = f'SDM_multisel_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}_{side}'
+    plot_title = f'SDM_multisel_{side}_z{z0}to{z0+dz}_frame{frame_start}to{frame_stop}_{plot_type}'
     #replace whitespaces with underscores
     plot_title = plot_title.replace(' ','_')
     #save figure
